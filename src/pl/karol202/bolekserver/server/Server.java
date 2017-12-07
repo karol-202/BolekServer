@@ -1,6 +1,6 @@
 package pl.karol202.bolekserver.server;
 
-import pl.karol202.bolekserver.game.GameManager;
+import pl.karol202.bolekserver.game.server.GameServersManager;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,12 +10,12 @@ public class Server
 {
 	private static final int PORT = 606;
 	
-	private GameManager gameManager;
+	private GameServersManager gameServersManager;
 	private ServerSocket serverSocket;
 	
-	public Server(GameManager gameManager)
+	public Server(GameServersManager gameServersManager)
 	{
-		this.gameManager = gameManager;
+		this.gameServersManager = gameServersManager;
 		
 		startServerSocket();
 		tryToWaitForClients();
@@ -50,7 +50,7 @@ public class Server
 		while(!serverSocket.isClosed())
 		{
 			Socket socket = serverSocket.accept();
-			Connection connection = new Connection(gameManager);
+			Connection connection = new Connection(gameServersManager);
 			if(connection.connect(socket)) continue;
 			createConnectionThread(connection);
 		}

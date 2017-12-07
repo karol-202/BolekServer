@@ -1,8 +1,9 @@
 package pl.karol202.bolekserver.server;
 
-import pl.karol202.bolekserver.game.GameManager;
-import pl.karol202.bolekserver.server.packet.Packet;
-import pl.karol202.bolekserver.server.packet.PacketFactory;
+import pl.karol202.bolekserver.game.server.Game;
+import pl.karol202.bolekserver.game.server.GameServer;
+import pl.karol202.bolekserver.game.server.GameServersManager;
+import pl.karol202.bolekserver.server.inputpacket.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,15 +12,17 @@ import java.net.Socket;
 
 class Connection
 {
-	private GameManager gameManager;
+	private GameServersManager gameServersManager;
+	private GameServer gameServer;
+	private Game game;
 	
 	private Socket socket;
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	
-	Connection(GameManager gameManager)
+	Connection(GameServersManager gameServersManager)
 	{
-		this.gameManager = gameManager;
+		this.gameServersManager = gameServersManager;
 	}
 	
 	public boolean connect(Socket socket)
@@ -50,8 +53,7 @@ class Connection
 	
 	public void run()
 	{
-		if(!isConnected()) return;
-		tryToListen();
+		if(isConnected()) tryToListen();
 	}
 	
 	private void tryToListen()
@@ -68,17 +70,33 @@ class Connection
 	
 	private void listen() throws IOException
 	{
-		byte[] bytes = new byte[1024];
-		int length;
-		while((length = inputStream.read(bytes)) != -1)
+		while(true)
 		{
-			Packet packet = PacketFactory.createPacket(bytes, length);
-			if(packet == null) invalidPacket(bytes);
-			else packet.execute(gameManager);
+			InputPacket packet = receivePacket();
+			if(packet != null) executePacket(packet);
+			else break;
 		}
 	}
 	
-	public void closeSocket()
+	private InputPacket receivePacket() throws IOException
+	{
+		int length = Utils.readInt(inputStream);
+		if(length <= 0) return null;
+		byte[] bytes = new byte[length];
+		int bytesRead = inputStream.read(bytes);
+		if(bytesRead != length) return null;
+		
+		return InputPacketFactory.createPacket(bytes);
+	}
+	
+	private void executePacket(InputPacket packet)
+	{
+		if(packet instanceof InputControlPacket) ((InputControlPacket) packet).execute(gameServersManager);
+		else if(packet instanceof InputServerPacket) ((InputServerPacket) packet).execute(gameServer);
+		else if(packet instanceof InputGamePacket) ((InputGamePacket) packet).execute(game);
+	}
+	
+	private void closeSocket()
 	{
 		if(!isConnected()) return;
 		try
@@ -94,11 +112,6 @@ class Connection
 	private boolean isConnected()
 	{
 		return socket.isConnected() && !socket.isClosed();
-	}
-	
-	private void invalidPacket(byte[] bytes)
-	{
-		new ServerException("Invalid packet: " + bytes[0]).printStackTrace();
 	}
 	
 	private void exception(String message, Exception exception)

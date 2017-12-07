@@ -1,13 +1,13 @@
 package pl.karol202.bolekserver.server;
 
-class ServerException extends RuntimeException
+public class ServerException extends RuntimeException
 {
-	ServerException(String message)
+	public ServerException(String message)
 	{
 		super(message);
 	}
 	
-	ServerException(String message, Throwable cause)
+	public ServerException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
