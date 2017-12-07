@@ -1,11 +1,12 @@
 package pl.karol202.bolekserver.server.inputpacket;
 
 import pl.karol202.bolekserver.game.manager.ConnectionActionCreateServer;
-import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
+import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.game.server.ServerActionAddUser;
 import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.DataBundle;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacketLoggedIn;
 
 public class InputPacketCreateServer implements InputControlPacket
 {
@@ -22,9 +23,11 @@ public class InputPacketCreateServer implements InputControlPacket
 	@Override
 	public void execute(Connection connection, GameServersManager manager)
 	{
-		GameServer gameServer = manager.addActionAndWaitForResult(new ConnectionActionCreateServer(name));
-		connection.setGameServer(gameServer);
+		GameServer server = manager.addActionAndWaitForResult(new ConnectionActionCreateServer(name));
+		connection.setGameServer(server);
 		
-		gameServer.addActionAndWaitForResult(new ServerActionAddUser(username));
+		server.addActionAndWaitForResult(new ServerActionAddUser(username));
+		
+		connection.sendPacket(new OutputPacketLoggedIn(server.getServerCode()));
 	}
 }

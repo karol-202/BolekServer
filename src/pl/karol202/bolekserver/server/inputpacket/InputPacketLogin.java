@@ -5,6 +5,7 @@ import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.DataBundle;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacketLoggedIn;
 
 public class InputPacketLogin implements InputControlPacket
 {
@@ -23,5 +24,7 @@ public class InputPacketLogin implements InputControlPacket
 	{
 		GameServer server = manager.addActionAndWaitForResult(new ConnectionActionLogin(serverCode, username));
 		connection.setGameServer(server);
+		
+		connection.sendPacket(new OutputPacketLoggedIn(serverCode));
 	}
 }

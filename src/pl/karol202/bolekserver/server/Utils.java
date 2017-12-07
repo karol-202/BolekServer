@@ -14,4 +14,11 @@ public class Utils
 		ByteBuffer buffer = ByteBuffer.wrap(bytes);
 		return buffer.getInt();
 	}
+	
+	public static byte[] writeInt(int value)
+	{
+		ByteBuffer buffer = ByteBuffer.allocate(4);
+		buffer.putInt(value);
+		return buffer.array();
+	}
 }

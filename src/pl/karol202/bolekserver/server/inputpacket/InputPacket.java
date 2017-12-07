@@ -4,5 +4,5 @@ import pl.karol202.bolekserver.server.DataBundle;
 
 public interface InputPacket
 {
-	public void readData(DataBundle bundle);
+	void readData(DataBundle bundle);
 }

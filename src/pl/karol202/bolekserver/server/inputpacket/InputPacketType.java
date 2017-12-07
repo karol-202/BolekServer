@@ -5,7 +5,8 @@ import java.util.stream.Stream;
 
 enum InputPacketType
 {
-	CREATESERVER(InputPacketCreateServer::new);
+	CREATESERVER(InputPacketCreateServer::new),
+	LOGIN(InputPacketLogin::new);
 	
 	private Supplier<InputPacket> packetSupplier;
 	

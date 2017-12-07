@@ -4,6 +4,8 @@ import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.server.inputpacket.*;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacket;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacketEncoder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,6 +96,26 @@ public class Connection
 		if(packet instanceof InputControlPacket) ((InputControlPacket) packet).execute(this, gameServersManager);
 		else if(packet instanceof InputServerPacket) ((InputServerPacket) packet).execute(this, gameServer);
 		else if(packet instanceof InputGamePacket) ((InputGamePacket) packet).execute(this, game);
+	}
+	
+	public void sendPacket(OutputPacket packet)
+	{
+		try
+		{
+			writePacket(packet);
+		}
+		catch(IOException e)
+		{
+			exception("Cannot send packet.", e);
+		}
+	}
+	
+	private void writePacket(OutputPacket packet) throws IOException
+	{
+		byte[] bytes = OutputPacketEncoder.encodePacket(packet);
+		if(bytes == null || bytes.length == 0) return;
+		outputStream.write(Utils.writeInt(bytes.length));
+		outputStream.write(bytes);
 	}
 	
 	private void closeSocket()

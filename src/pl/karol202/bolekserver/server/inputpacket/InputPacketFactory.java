@@ -1,6 +1,5 @@
 package pl.karol202.bolekserver.server.inputpacket;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -12,6 +11,7 @@ import pl.karol202.bolekserver.server.ServerException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -32,7 +32,7 @@ public class InputPacketFactory
 	
 	private static InputPacket getPacket(byte[] bytes) throws IOException, SAXException, ParserConfigurationException
 	{
-		InputStream inputStream = new ByteInputStream(bytes, bytes.length);
+		InputStream inputStream = new ByteArrayInputStream(bytes);
 		Document document = getDocument(inputStream);
 		if(document == null) return null;
 		return createPacketFromXML(document);
