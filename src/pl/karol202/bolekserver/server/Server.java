@@ -1,6 +1,6 @@
 package pl.karol202.bolekserver.server;
 
-import pl.karol202.bolekserver.game.server.GameServersManager;
+import pl.karol202.bolekserver.game.manager.GameServersManager;
 
 import java.io.IOException;
 import java.net.ServerSocket;

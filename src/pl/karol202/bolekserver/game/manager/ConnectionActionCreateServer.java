@@ -1,4 +1,6 @@
-package pl.karol202.bolekserver.game.server;
+package pl.karol202.bolekserver.game.manager;
+
+import pl.karol202.bolekserver.game.server.GameServer;
 
 public class ConnectionActionCreateServer implements ConnectionAction<GameServer>
 {
@@ -12,6 +14,6 @@ public class ConnectionActionCreateServer implements ConnectionAction<GameServer
 	@Override
 	public GameServer execute(GameServersManager manager)
 	{
-		return manager.createNewGameServer();
+		return manager.createNewGameServer(name);
 	}
 }

@@ -1,8 +1,8 @@
 package pl.karol202.bolekserver.server;
 
-import pl.karol202.bolekserver.game.server.Game;
+import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.server.GameServer;
-import pl.karol202.bolekserver.game.server.GameServersManager;
+import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.server.inputpacket.*;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-class Connection
+public class Connection
 {
 	private GameServersManager gameServersManager;
 	private GameServer gameServer;
@@ -91,9 +91,9 @@ class Connection
 	
 	private void executePacket(InputPacket packet)
 	{
-		if(packet instanceof InputControlPacket) ((InputControlPacket) packet).execute(gameServersManager);
-		else if(packet instanceof InputServerPacket) ((InputServerPacket) packet).execute(gameServer);
-		else if(packet instanceof InputGamePacket) ((InputGamePacket) packet).execute(game);
+		if(packet instanceof InputControlPacket) ((InputControlPacket) packet).execute(this, gameServersManager);
+		else if(packet instanceof InputServerPacket) ((InputServerPacket) packet).execute(this, gameServer);
+		else if(packet instanceof InputGamePacket) ((InputGamePacket) packet).execute(this, game);
 	}
 	
 	private void closeSocket()
@@ -112,6 +112,16 @@ class Connection
 	private boolean isConnected()
 	{
 		return socket.isConnected() && !socket.isClosed();
+	}
+	
+	public void setGameServer(GameServer gameServer)
+	{
+		this.gameServer = gameServer;
+	}
+	
+	public void setGame(Game game)
+	{
+		this.game = game;
 	}
 	
 	private void exception(String message, Exception exception)

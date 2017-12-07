@@ -1,4 +1,4 @@
-package pl.karol202.bolekserver.game.server;
+package pl.karol202.bolekserver.game;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -13,26 +13,11 @@ public class ActionsQueue<A extends Action>
 		{
 			this.action = action;
 		}
-		
-		private A getAction()
-		{
-			return action;
-		}
-		
-		private Object getResult()
-		{
-			return result;
-		}
-		
-		private void setResult(Object result)
-		{
-			this.result = result;
-		}
 	}
 	
 	private ConcurrentLinkedQueue<ActionAndResult> queue;
 	
-	ActionsQueue()
+	public ActionsQueue()
 	{
 		queue = new ConcurrentLinkedQueue<>();
 	}
@@ -42,10 +27,26 @@ public class ActionsQueue<A extends Action>
 		queue.add(new ActionAndResult(action));
 	}
 	
+	public A pollAction()
+	{
+		return queue.poll().action;
+	}
+	
+	public boolean isEmpty()
+	{
+		return queue.isEmpty();
+	}
+	
 	public Object getResult(A action)
 	{
 		for(ActionAndResult actionAndResult : queue)
 			if(actionAndResult.action == action) return actionAndResult.result;
 		return null;
+	}
+	
+	public void setResult(A action, Object result)
+	{
+		for(ActionAndResult actionAndResult : queue)
+			if(actionAndResult.action == action) actionAndResult.result = result;
 	}
 }
