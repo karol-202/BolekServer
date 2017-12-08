@@ -2,7 +2,6 @@ package pl.karol202.bolekserver.game.manager;
 
 import pl.karol202.bolekserver.game.ActionsQueue;
 import pl.karol202.bolekserver.game.server.GameServer;
-import pl.karol202.bolekserver.game.server.ServerActionAddUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +9,8 @@ import java.util.Random;
 
 public class GameServersManager
 {
+	private static final int MAX_SERVERS = 10;
+	
 	private List<GameServer> servers;
 	
 	private ActionsQueue<ConnectionAction> actionsQueue;
@@ -25,16 +26,15 @@ public class GameServersManager
 	
 	GameServer createNewGameServer(String name)
 	{
+		if(servers.size() >= MAX_SERVERS) return null;
 		GameServer server = new GameServer(name, getUniqueServerCode());
 		servers.add(server);
 		return server;
 	}
 	
-	GameServer loginToServer(int serverCode, String username)
+	GameServer findServer(int serverCode)
 	{
-		GameServer server = servers.stream().filter(s -> s.getServerCode() == serverCode).findAny().orElse(null);
-		if(server != null) server.addActionAndReturnImmediately(new ServerActionAddUser(username));
-		return server;
+		return servers.stream().filter(s -> s.getServerCode() == serverCode).findAny().orElse(null);
 	}
 	
 	private int getUniqueServerCode()

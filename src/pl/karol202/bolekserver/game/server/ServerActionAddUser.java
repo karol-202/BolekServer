@@ -1,18 +1,21 @@
 package pl.karol202.bolekserver.game.server;
 
-public class ServerActionAddUser implements ServerAction<Void>
+import pl.karol202.bolekserver.server.Connection;
+
+public class ServerActionAddUser implements ServerAction<User>
 {
 	private String username;
+	private Connection connection;
 	
-	public ServerActionAddUser(String username)
+	public ServerActionAddUser(String username, Connection connection)
 	{
 		this.username = username;
+		this.connection = connection;
 	}
 	
 	@Override
-	public Void execute(GameServer server)
+	public User execute(GameServer server)
 	{
-		server.addNewUser(username);
-		return null;
+		return server.addNewUser(username, connection);
 	}
 }

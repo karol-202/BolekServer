@@ -1,12 +1,15 @@
 package pl.karol202.bolekserver.game.server;
 
 import pl.karol202.bolekserver.game.ActionsQueue;
+import pl.karol202.bolekserver.server.Connection;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameServer
 {
+	private static final int MAX_USERS = 10;
+	
 	private String name;
 	private int serverCode;
 	private List<User> users;
@@ -22,10 +25,19 @@ public class GameServer
 		this.actionsQueue = new ActionsQueue<>();
 	}
 	
-	void addNewUser(String username)
+	User addNewUser(String username, Connection connection)
 	{
-		User user = new User(username);
+		if(users.size() >= MAX_USERS) return null;
+		User user = new User(username, connection);
 		users.add(user);
+		return user;
+	}
+	
+	boolean removeUser(User user)
+	{
+		if(!users.contains(user)) users.remove(user);
+		else return false;
+		return true;
 	}
 	
 	public void executeActions()
@@ -45,11 +57,6 @@ public class GameServer
 		while(result == null);
 		
 		return (R) result;
-	}
-	
-	public void addActionAndReturnImmediately(ServerAction action)
-	{
-		actionsQueue.addAction(action);
 	}
 	
 	public String getName()

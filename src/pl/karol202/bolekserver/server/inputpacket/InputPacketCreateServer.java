@@ -4,8 +4,10 @@ import pl.karol202.bolekserver.game.manager.ConnectionActionCreateServer;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.game.server.ServerActionAddUser;
+import pl.karol202.bolekserver.game.server.User;
 import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.DataBundle;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacketFailure;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacketLoggedIn;
 
 public class InputPacketCreateServer implements InputControlPacket
@@ -24,10 +26,21 @@ public class InputPacketCreateServer implements InputControlPacket
 	public void execute(Connection connection, GameServersManager manager)
 	{
 		GameServer server = manager.addActionAndWaitForResult(new ConnectionActionCreateServer(name));
+		if(server == null)
+		{
+			connection.sendPacket(new OutputPacketFailure());
+			return;
+		}
 		connection.setGameServer(server);
 		
-		server.addActionAndWaitForResult(new ServerActionAddUser(username));
+		User user = server.addActionAndWaitForResult(new ServerActionAddUser(username, connection));
+		if(user == null)
+		{
+			connection.sendPacket(new OutputPacketFailure());
+			return;
+		}
+		connection.setUser(user);
 		
-		connection.sendPacket(new OutputPacketLoggedIn(server.getServerCode()));
+		connection.sendPacket(new OutputPacketLoggedIn(server.getName(), server.getServerCode()));
 	}
 }
