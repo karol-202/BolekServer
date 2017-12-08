@@ -64,9 +64,9 @@ public class OutputPacketEncoder
 	private static Element createPacketElement(Document document, OutputPacket packet, DataBundle bundle)
 	{
 		Element element = document.createElement(packet.getName());
-		bundle.getStringEntriesStream().forEach(e -> element.setAttribute(e.getKey(), e.getValue()));
-		bundle.getIntEntriesStream().forEach(e -> element.setAttribute(e.getKey(), String.valueOf(e.getValue())));
-		bundle.getFloatEntriesStream().forEach(e -> element.setAttribute(e.getKey(), String.valueOf(e.getValue())));
+		bundle.getStringEntriesStream().forEach(e -> element.setAttribute("s." + e.getKey(), e.getValue()));
+		bundle.getIntEntriesStream().forEach(e -> element.setAttribute("i." + e.getKey(), String.valueOf(e.getValue())));
+		bundle.getFloatEntriesStream().forEach(e -> element.setAttribute("f." + e.getKey(), String.valueOf(e.getValue())));
 		return element;
 	}
 }

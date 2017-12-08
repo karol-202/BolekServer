@@ -14,7 +14,7 @@ public class User
 		this.adapter = new UserAdapterConnection(connection);
 	}
 	
-	String getName()
+	public String getName()
 	{
 		return name;
 	}

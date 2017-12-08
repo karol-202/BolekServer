@@ -28,6 +28,8 @@ public class GameServer
 	User addNewUser(String username, Connection connection)
 	{
 		if(users.size() >= MAX_USERS) return null;
+		broadcastUsersUpdate();
+		
 		User user = new User(username, connection);
 		users.add(user);
 		return user;
@@ -35,9 +37,21 @@ public class GameServer
 	
 	boolean removeUser(User user)
 	{
-		if(!users.contains(user)) users.remove(user);
-		else return false;
+		if(!users.contains(user)) return false;
+		broadcastUsersUpdate();
+		
+		users.remove(user);
 		return true;
+	}
+	
+	void sendUsersListToUser(User user)
+	{
+		user.getUserAdapter().sendUsersList(users.stream());
+	}
+	
+	private void broadcastUsersUpdate()
+	{
+		users.forEach(u -> u.getUserAdapter().sendUsersList(users.stream()));
 	}
 	
 	public void executeActions()
