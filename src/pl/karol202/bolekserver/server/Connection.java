@@ -1,6 +1,7 @@
 package pl.karol202.bolekserver.server;
 
 import pl.karol202.bolekserver.game.game.Game;
+import pl.karol202.bolekserver.game.game.Player;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.game.server.User;
@@ -19,6 +20,7 @@ public class Connection
 	private GameServer gameServer;
 	private Game game;
 	private User user;
+	private Player player;
 	
 	private Socket socket;
 	private InputStream inputStream;
@@ -156,6 +158,16 @@ public class Connection
 	public void setUser(User user)
 	{
 		this.user = user;
+	}
+	
+	public Player getPlayer()
+	{
+		return player;
+	}
+	
+	public void setPlayer(Player player)
+	{
+		this.player = player;
 	}
 	
 	private void exception(String message, Exception exception)

@@ -4,17 +4,17 @@ import pl.karol202.bolekserver.server.DataBundle;
 
 public class OutputPacketPresidentAssigned implements OutputPacket
 {
-	private String player;
+	private String president;
 	
-	public OutputPacketPresidentAssigned(String player)
+	public OutputPacketPresidentAssigned(String president)
 	{
-		this.player = player;
+		this.president = president;
 	}
 	
 	@Override
 	public void saveData(DataBundle bundle)
 	{
-		bundle.putString("player", player);
+		bundle.putString("president", president);
 	}
 	
 	@Override

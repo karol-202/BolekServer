@@ -12,7 +12,6 @@ public class Player
 	private User user;
 	private PlayerAdapter adapter;
 	private Role role;
-	private Position position;
 	private boolean canBePrimeMinister;
 	
 	public Player(User user, UserAdapter adapter)
@@ -20,7 +19,7 @@ public class Player
 		this.user = user;
 		if(adapter instanceof UserAdapterConnection)
 			this.adapter = new PlayerAdapterConnection(((UserAdapterConnection) adapter).getConnection());
-		this.position = Position.NULL;
+		this.adapter.setPlayer(this);
 	}
 	
 	void assignRole(Role role)
@@ -28,11 +27,9 @@ public class Player
 		if(this.role == null) this.role = role;
 	}
 	
-	void assignPosition(Position position)
+	void endTerm()
 	{
-		if(this.position == position) return;
-		if(this.position != Position.NULL) canBePrimeMinister = false;
-		this.position = position;
+		canBePrimeMinister = false;
 	}
 	
 	void nextTurn()
@@ -75,6 +72,16 @@ public class Player
 		adapter.sendPrimeMinisterVotingRequest();
 	}
 	
+	void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed)
+	{
+		adapter.sendVotingResultMessage(upvoters, totalVotes, passed);
+	}
+	
+	void sendPrimeMinisterAssignmentMessage(Player player)
+	{
+		adapter.sendPrimeMinisterAssignmentMessage(player);
+	}
+	
 	public String getName()
 	{
 		return user.getName();
@@ -83,11 +90,6 @@ public class Player
 	Role getRole()
 	{
 		return role;
-	}
-	
-	Position getPosition()
-	{
-		return position;
 	}
 	
 	boolean canBePrimeMinisterNow()

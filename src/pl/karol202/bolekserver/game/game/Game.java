@@ -3,17 +3,20 @@ package pl.karol202.bolekserver.game.game;
 import pl.karol202.bolekserver.game.ActionsQueue;
 import pl.karol202.bolekserver.server.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Game
 {
 	private List<Player> players;
+	private Player president;
+	private Player primeMinister;
+	
 	private boolean choosingPrimeMinister;
 	private boolean votingOnPrimeMinister;
 	private Player votedPrimeMinister;
+	private Map<Player, Boolean> votes;
+	private int failedVotings;
 	
 	private ActionsQueue<GameAction> actionsQueue;
 	
@@ -33,22 +36,31 @@ public class Game
 	
 	void nextTurn()
 	{
-	
+		assignPresidentPosition(getNextPlayer(president));
+		endPrimeMinisterTerm();
 	}
 	
-	boolean choosePrimeMinister(String name)
+	boolean choosePrimeMinister(Player sender, String name)
 	{
-		if(!choosingPrimeMinister) return false;
+		if(!choosingPrimeMinister || sender != president) return false;
 		Player player = getPlayerByName(name);
 		if(player == null || !player.canBePrimeMinisterNow()) return false;
 		
 		choosingPrimeMinister = false;
 		votingOnPrimeMinister = true;
 		votedPrimeMinister = player;
+		votes = new HashMap<>();
 		
 		broadcastPrimeMinisterChosen(player);
 		broadcastPrimeMinisterVotingRequest();
 		return true;
+	}
+	
+	void voteOnPrimeMinister(Player sender, boolean vote)
+	{
+		if(!votingOnPrimeMinister) return;
+		votes.put(sender, vote);
+		checkIfVotingIsEnded();
 	}
 	
 	private void assignRoles()
@@ -56,8 +68,7 @@ public class Game
 		Player bolek = getRandomPlayerWithoutRole();
 		if(bolek != null) bolek.assignRole(Role.BOLEK);
 		
-		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(players.size()))
-									 .forEach(p -> p.assignRole(Role.COLLABORATOR));
+		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(players.size())).forEach(p -> p.assignRole(Role.COLLABORATOR));
 		
 		players.stream().filter(p -> p.getRole() == null).forEach(p -> p.assignRole(Role.MINISTER));
 		
@@ -67,16 +78,66 @@ public class Game
 	
 	private void assignPresidentPosition(Player president)
 	{
-		president.assignPosition(Position.PRESIDENT);
-		broadcastPresidentAssignment(president);
+		this.president = president;
+		broadcastPresidentAssignment();
 		
-		letPresidentChoosePrimeMinister(president);
+		letPresidentChoosePrimeMinister();
 	}
 	
-	private void letPresidentChoosePrimeMinister(Player president)
+	private void assignPrimeMinisterPosition(Player primeMinister)
+	{
+		this.primeMinister = primeMinister;
+		broadcastPrimeMinisterAssignment();
+		failedVotings = 0;
+	}
+	
+	private void letPresidentChoosePrimeMinister()
 	{
 		choosingPrimeMinister = true;
-		sendPrimeMinisterChooseRequest(president);
+		sendPrimeMinisterChooseRequest();
+	}
+	
+	private void checkIfVotingIsEnded()
+	{
+		for(Player voter : players) if(!votes.containsKey(voter)) return;
+		countVotes();
+	}
+	
+	private void countVotes()
+	{
+		int upvotes = (int) votes.values().stream().filter(b -> b).count();
+		int requiredVotes = (int) Math.ceil(votes.size() / 2f);
+		boolean passed = upvotes >= requiredVotes;
+		
+		broadcastVotingResult(passed);
+		if(passed) primeMinisterChosen();
+		else primeMinisterNotChosen();
+		endVoting();
+	}
+	
+	private void primeMinisterChosen()
+	{
+		assignPrimeMinisterPosition(votedPrimeMinister);
+	}
+	
+	private void primeMinisterNotChosen()
+	{
+		failedVotings++;
+		addActionAndReturnImmediately(new GameActionNextTurn());
+	}
+	
+	private void endVoting()
+	{
+		votingOnPrimeMinister = false;
+		votedPrimeMinister = null;
+		votes = null;
+	}
+	
+	private void endPrimeMinisterTerm()
+	{
+		primeMinister.endTerm();
+		primeMinister = null;
+		broadcastPrimeMinisterAssignment();
 	}
 	
 	
@@ -94,6 +155,13 @@ public class Game
 	{
 		Random random = new Random();
 		return players.get(random.nextInt(players.size()));
+	}
+	
+	private Player getNextPlayer(Player player)
+	{
+		int playerNumber = players.indexOf(player);
+		if(++playerNumber >= players.size()) playerNumber = 0;
+		return players.get(playerNumber);
 	}
 	
 	private Player getPlayerByName(String name)
@@ -117,12 +185,12 @@ public class Game
 		players.forEach(p -> p.sendCollaboratorsRevealmentMessage(collaborators));
 	}
 	
-	private void broadcastPresidentAssignment(Player president)
+	private void broadcastPresidentAssignment()
 	{
 		players.forEach(p -> p.sendPresidentAssignmentMessage(president));
 	}
 	
-	private void sendPrimeMinisterChooseRequest(Player president)
+	private void sendPrimeMinisterChooseRequest()
 	{
 		Stream<Player> candidates = players.stream().filter(Player::canBePrimeMinisterNow);
 		president.sendPrimeMinisterChooseRequest(candidates);
@@ -136,6 +204,17 @@ public class Game
 	private void broadcastPrimeMinisterVotingRequest()
 	{
 		players.forEach(Player::sendPrimeMinisterVotingRequest);
+	}
+	
+	private void broadcastVotingResult(boolean passed)
+	{
+		Stream<Player> upvoters = votes.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey);
+		players.forEach(p -> p.sendVotingResultMessage(upvoters, votes.size(), passed));
+	}
+	
+	private void broadcastPrimeMinisterAssignment()
+	{
+		players.forEach(p -> p.sendPrimeMinisterAssignmentMessage(primeMinister));
 	}
 	
 	public void executeActions()

@@ -17,6 +17,12 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
+	public void setPlayer(Player player)
+	{
+		connection.setPlayer(player);
+	}
+	
+	@Override
 	public void sendGameStartMessage(Stream<Player> players)
 	{
 		OutputPacketGameStart packet = new OutputPacketGameStart();
@@ -40,9 +46,9 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendPresidentAssignmentMessage(Player player)
+	public void sendPresidentAssignmentMessage(Player president)
 	{
-		OutputPacketPresidentAssigned packet = new OutputPacketPresidentAssigned(player.getName());
+		OutputPacketPresidentAssigned packet = new OutputPacketPresidentAssigned(president.getName());
 		connection.sendPacket(packet);
 	}
 	
@@ -55,9 +61,9 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendPrimeMinisterChosenMessage(Player player)
+	public void sendPrimeMinisterChosenMessage(Player primeMinister)
 	{
-		OutputPacketPrimeMinisterChosen packet = new OutputPacketPrimeMinisterChosen(player.getName());
+		OutputPacketPrimeMinisterChosen packet = new OutputPacketPrimeMinisterChosen(primeMinister.getName());
 		connection.sendPacket(packet);
 	}
 	
@@ -65,6 +71,22 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	public void sendPrimeMinisterVotingRequest()
 	{
 		OutputPacketVoteOnPrimeMinister packet = new OutputPacketVoteOnPrimeMinister();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed)
+	{
+		OutputPacketVotingResult packet = new OutputPacketVotingResult(totalVotes, passed);
+		upvoters.forEach(p -> packet.addUpvoter(p.getName()));
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPrimeMinisterAssignmentMessage(Player primeMinister)
+	{
+		String name = primeMinister != null ? primeMinister.getName() : "";
+		OutputPacketPrimeMinisterAssigned packet = new OutputPacketPrimeMinisterAssigned(name);
 		connection.sendPacket(packet);
 	}
 }
