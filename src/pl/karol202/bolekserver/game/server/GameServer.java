@@ -1,18 +1,24 @@
 package pl.karol202.bolekserver.game.server;
 
 import pl.karol202.bolekserver.game.ActionsQueue;
+import pl.karol202.bolekserver.game.game.Game;
+import pl.karol202.bolekserver.game.game.GameActionStartGame;
+import pl.karol202.bolekserver.game.game.Player;
 import pl.karol202.bolekserver.server.Connection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameServer
 {
+	private static final int MIN_USERS = 5;
 	private static final int MAX_USERS = 10;
 	
 	private String name;
 	private int serverCode;
 	private List<User> users;
+	private Game game;
 	
 	private ActionsQueue<ServerAction> actionsQueue;
 	
@@ -27,7 +33,7 @@ public class GameServer
 	
 	User addNewUser(String username, Connection connection)
 	{
-		if(users.size() >= MAX_USERS) return null;
+		if(username == null || connection == null || users.size() >= MAX_USERS) return null;
 		broadcastUsersUpdate();
 		
 		User user = new User(username, connection);
@@ -46,24 +52,57 @@ public class GameServer
 	
 	void sendUsersListToUser(User user)
 	{
-		user.getUserAdapter().sendUsersList(users.stream());
+		if(user != null) user.getAdapter().sendUsersList(users.stream());
+	}
+	
+	void setUserReady(User user)
+	{
+		if(!users.contains(user)) return;
+		user.setReady(true);
+		broadcastUserReadiness(user.getName());
+		checkForReadiness();
 	}
 	
 	private void broadcastUsersUpdate()
 	{
-		users.forEach(u -> u.getUserAdapter().sendUsersList(users.stream()));
+		users.forEach(u -> u.sendUsersList(users.stream()));
+	}
+	
+	private void broadcastUserReadiness(String username)
+	{
+		users.forEach(u -> u.sendUserReadiness(username));
+	}
+	
+	private void checkForReadiness()
+	{
+		if(users.size() < MIN_USERS) return;
+		for(User user : users) if(!user.isReady()) return;
+		startGame();
+	}
+	
+	private void startGame()
+	{
+		users.forEach(u -> u.setReady(false));
+		
+		List<Player> players = users.stream().map(u -> new Player(u, u.getAdapter())).collect(Collectors.toList());
+		game = new Game(players);
+		game.addActionAndReturnImmediately(new GameActionStartGame());
 	}
 	
 	public void executeActions()
 	{
-		if(actionsQueue.isEmpty()) return;
-		ServerAction action = actionsQueue.pollAction();
-		Object result = action.execute(this);
-		actionsQueue.setResult(action, result);
+		while(!actionsQueue.isEmpty())
+		{
+			ServerAction action = actionsQueue.pollAction();
+			Object result = action.execute(this);
+			actionsQueue.setResult(action, result);
+		}
+		game.executeActions();
 	}
 	
 	public <R> R addActionAndWaitForResult(ServerAction<R> action)
 	{
+		if(action == null) return null;
 		actionsQueue.addAction(action);
 		
 		Object result;

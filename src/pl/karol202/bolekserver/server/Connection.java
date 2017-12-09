@@ -115,7 +115,7 @@ public class Connection
 	private void writePacket(OutputPacket packet) throws IOException
 	{
 		byte[] bytes = OutputPacketEncoder.encodePacket(packet);
-		if(bytes == null || bytes.length == 0) return;
+		if(bytes == null || bytes.length == 0 && !isConnected()) return;
 		outputStream.write(Utils.writeInt(bytes.length));
 		outputStream.write(bytes);
 	}

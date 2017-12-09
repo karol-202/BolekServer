@@ -3,6 +3,10 @@ package pl.karol202.bolekserver.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils
 {
@@ -20,5 +24,13 @@ public class Utils
 		ByteBuffer buffer = ByteBuffer.allocate(4);
 		buffer.putInt(value);
 		return buffer.array();
+	}
+	
+	public static <T> Collector<T, ?, Stream<T>> toShuffledStream()
+	{
+		return Collectors.collectingAndThen(Collectors.toList(), list -> {
+			Collections.shuffle(list);
+			return list.stream();
+		});
 	}
 }

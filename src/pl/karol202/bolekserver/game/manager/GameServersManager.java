@@ -26,7 +26,7 @@ public class GameServersManager
 	
 	GameServer createNewGameServer(String name)
 	{
-		if(servers.size() >= MAX_SERVERS) return null;
+		if(name == null || servers.size() >= MAX_SERVERS) return null;
 		GameServer server = new GameServer(name, getUniqueServerCode());
 		servers.add(server);
 		return server;
@@ -56,19 +56,18 @@ public class GameServersManager
 	
 	public void run()
 	{
-		while(!suspend)
-		{
-			executeActions();
-			servers.forEach(GameServer::executeActions);
-		}
+		while(!suspend) executeActions();
 	}
 	
 	private void executeActions()
 	{
-		if(actionsQueue.isEmpty()) return;
-		ConnectionAction action = actionsQueue.pollAction();
-		Object result = action.execute(this);
-		actionsQueue.setResult(action, result);
+		while(!actionsQueue.isEmpty())
+		{
+			ConnectionAction action = actionsQueue.pollAction();
+			Object result = action.execute(this);
+			actionsQueue.setResult(action, result);
+		}
+		servers.forEach(GameServer::executeActions);
 	}
 	
 	public void suspend()
@@ -78,6 +77,7 @@ public class GameServersManager
 	
 	public <R> R addActionAndWaitForResult(ConnectionAction<R> action)
 	{
+		if(action == null) return null;
 		actionsQueue.addAction(action);
 		
 		Object result;

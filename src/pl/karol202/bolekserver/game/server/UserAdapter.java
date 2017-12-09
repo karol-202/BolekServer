@@ -5,4 +5,6 @@ import java.util.stream.Stream;
 public interface UserAdapter
 {
 	void sendUsersList(Stream<User> users);
+	
+	void sendUserReadiness(String username);
 }
