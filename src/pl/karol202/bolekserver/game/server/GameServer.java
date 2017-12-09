@@ -19,6 +19,7 @@ public class GameServer
 	private int serverCode;
 	private List<User> users;
 	private Game game;
+	private boolean shouldExist;
 	
 	private ActionsQueue<ServerAction> actionsQueue;
 	
@@ -27,14 +28,16 @@ public class GameServer
 		this.name = name;
 		this.serverCode = serverCode;
 		this.users = new ArrayList<>();
+		this.shouldExist = true;
 		
 		this.actionsQueue = new ActionsQueue<>();
 	}
 	
 	User addNewUser(String username, Connection connection)
 	{
-		if(username == null || connection == null || users.size() >= MAX_USERS) return null;
+		if(username == null || connection == null || users.size() >= MAX_USERS || isUsernameUsed(username)) return null;
 		broadcastUsersUpdate();
+		if(!shouldExist) shouldExist = true;
 		
 		User user = new User(username, connection);
 		users.add(user);
@@ -45,6 +48,7 @@ public class GameServer
 	{
 		if(!users.contains(user)) return false;
 		broadcastUsersUpdate();
+		if(users.isEmpty()) shouldExist = false;
 		
 		users.remove(user);
 		return true;
@@ -71,6 +75,11 @@ public class GameServer
 	private void broadcastUserReadiness(String username)
 	{
 		users.forEach(u -> u.sendUserReadiness(username));
+	}
+	
+	private boolean isUsernameUsed(String username)
+	{
+		return users.stream().anyMatch(u -> u.getName().equals(username));
 	}
 	
 	private void checkForReadiness()
@@ -120,5 +129,10 @@ public class GameServer
 	public int getServerCode()
 	{
 		return serverCode;
+	}
+	
+	public boolean shouldLongerExist()
+	{
+		return shouldExist;
 	}
 }

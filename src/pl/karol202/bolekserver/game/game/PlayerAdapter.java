@@ -9,4 +9,12 @@ public interface PlayerAdapter
 	void sendRoleAssignmentMessage(Role role);
 	
 	void sendCollaboratorsRevealmentMessages(Stream<Player> collaborators);
+	
+	void sendPresidentAssignmentMessage(Player player);
+	
+	void sendPrimeMinisterChooseRequest(Stream<Player> candidates);
+	
+	void sendPrimeMinisterChosenMessage(Player player);
+	
+	void sendPrimeMinisterVotingRequest();
 }

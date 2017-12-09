@@ -1,0 +1,25 @@
+package pl.karol202.bolekserver.server.inputpacket;
+
+import pl.karol202.bolekserver.game.game.Game;
+import pl.karol202.bolekserver.game.game.GameActionChoosePrimeMinister;
+import pl.karol202.bolekserver.server.Connection;
+import pl.karol202.bolekserver.server.DataBundle;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacketFailure;
+
+public class InputPacketSetPrimeMinister implements InputGamePacket
+{
+	private String primeMinister;
+	
+	@Override
+	public void readData(DataBundle bundle)
+	{
+		primeMinister = bundle.getString("primeMinister", "");
+	}
+	
+	@Override
+	public void execute(Connection connection, Game game)
+	{
+		boolean result = game.addActionAndWaitForResult(new GameActionChoosePrimeMinister(primeMinister));
+		if(!result) connection.sendPacket(new OutputPacketFailure());
+	}
+}

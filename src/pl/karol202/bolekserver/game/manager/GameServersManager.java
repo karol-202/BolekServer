@@ -6,6 +6,7 @@ import pl.karol202.bolekserver.game.server.GameServer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class GameServersManager
 {
@@ -54,6 +55,11 @@ public class GameServersManager
 		return code;
 	}
 	
+	private void removeRidiculousServers()
+	{
+		servers = servers.stream().filter(GameServer::shouldLongerExist).collect(Collectors.toList());
+	}
+	
 	public void run()
 	{
 		while(!suspend) executeActions();
@@ -68,6 +74,7 @@ public class GameServersManager
 			actionsQueue.setResult(action, result);
 		}
 		servers.forEach(GameServer::executeActions);
+		removeRidiculousServers();
 	}
 	
 	public void suspend()
