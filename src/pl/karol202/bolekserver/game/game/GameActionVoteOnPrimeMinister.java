@@ -1,6 +1,6 @@
 package pl.karol202.bolekserver.game.game;
 
-public class GameActionVoteOnPrimeMinister implements GameAction<Void>
+public class GameActionVoteOnPrimeMinister implements GameAction<Boolean>
 {
 	private Player sender;
 	private boolean vote;
@@ -12,9 +12,8 @@ public class GameActionVoteOnPrimeMinister implements GameAction<Void>
 	}
 	
 	@Override
-	public Void execute(Game game)
+	public Boolean execute(Game game)
 	{
-		game.voteOnPrimeMinister(sender, vote);
-		return null;
+		return game.voteOnPrimeMinister(sender, vote);
 	}
 }

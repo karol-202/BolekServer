@@ -1,27 +1,28 @@
 package pl.karol202.bolekserver.server.inputpacket;
 
+import pl.karol202.bolekserver.game.game.Act;
 import pl.karol202.bolekserver.game.game.Game;
-import pl.karol202.bolekserver.game.game.GameActionVoteOnPrimeMinister;
+import pl.karol202.bolekserver.game.game.GameActionDismissActByPrimeMinister;
 import pl.karol202.bolekserver.game.game.Player;
 import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.DataBundle;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacketFailure;
 
-public class InputPacketPrimeMinisterVote implements InputGamePacket
+public class InputPacketDismissActByPrimeMinister implements InputGamePacket
 {
-	private boolean vote;
+	private Act act;
 	
 	@Override
 	public void readData(DataBundle bundle)
 	{
-		vote = bundle.getInt("vote", 0) > 0;
+		act = Act.getActByName(bundle.getString("act", ""));
 	}
 	
 	@Override
 	public void execute(Connection connection, Game game)
 	{
 		Player sender = connection.getPlayer();
-		boolean result = game.addActionAndWaitForResult(new GameActionVoteOnPrimeMinister(sender, vote));
+		boolean result = game.addActionAndWaitForResult(new GameActionDismissActByPrimeMinister(sender, act));
 		if(!result) connection.sendPacket(new OutputPacketFailure());
 	}
 }

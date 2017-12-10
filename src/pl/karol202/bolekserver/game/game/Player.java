@@ -82,6 +82,31 @@ public class Player
 		adapter.sendPrimeMinisterAssignmentMessage(player);
 	}
 	
+	void sendChooseActsRequestToPresident(Act[] acts)
+	{
+		adapter.sendChooseActsRequestToPresident(acts);
+	}
+	
+	void sendPresidentChoosingActsMessage()
+	{
+		adapter.sendPresidentChoosingActsMessage();
+	}
+	
+	void sendChooseActsRequestToPrimeMinister(Act[] acts)
+	{
+		adapter.sendChooseActsRequestToPrimeMinister(acts);
+	}
+	
+	void sendPrimeMinisterChoosingActsMessage()
+	{
+		adapter.sendPrimeMinisterChoosingActsMessage();
+	}
+	
+	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed)
+	{
+		adapter.sendActPassedMessage(lustrationPassed, antilustrationPassed);
+	}
+	
 	public String getName()
 	{
 		return user.getName();

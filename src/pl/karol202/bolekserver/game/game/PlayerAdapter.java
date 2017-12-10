@@ -23,4 +23,14 @@ public interface PlayerAdapter
 	void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed);
 	
 	void sendPrimeMinisterAssignmentMessage(Player primeMinister);
+	
+	void sendChooseActsRequestToPresident(Act[] acts);
+	
+	void sendPresidentChoosingActsMessage();
+	
+	void sendChooseActsRequestToPrimeMinister(Act[] acts);
+	
+	void sendPrimeMinisterChoosingActsMessage();
+	
+	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed);
 }

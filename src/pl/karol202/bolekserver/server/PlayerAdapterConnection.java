@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.server;
 
+import pl.karol202.bolekserver.game.game.Act;
 import pl.karol202.bolekserver.game.game.Player;
 import pl.karol202.bolekserver.game.game.PlayerAdapter;
 import pl.karol202.bolekserver.game.game.Role;
@@ -87,6 +88,43 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	{
 		String name = primeMinister != null ? primeMinister.getName() : "";
 		OutputPacketPrimeMinisterAssigned packet = new OutputPacketPrimeMinisterAssigned(name);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendChooseActsRequestToPresident(Act[] acts)
+	{
+		String[] strings = Stream.of(acts).map(Enum::name).toArray(String[]::new);
+		OutputPacketChooseActsPresident packet = new OutputPacketChooseActsPresident(strings);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentChoosingActsMessage()
+	{
+		OutputPacketPresidentChoosingActs packet = new OutputPacketPresidentChoosingActs();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendChooseActsRequestToPrimeMinister(Act[] acts)
+	{
+		String[] strings = Stream.of(acts).map(Enum::name).toArray(String[]::new);
+		OutputPacketChooseActsPrimeMinister packet = new OutputPacketChooseActsPrimeMinister(strings);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPrimeMinisterChoosingActsMessage()
+	{
+		OutputPacketPrimeMinisterChoosingActs packet = new OutputPacketPrimeMinisterChoosingActs();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendActPassedMessage(int lustrationPassed, int antilustrationPassed)
+	{
+		OutputPacketActPassed packet = new OutputPacketActPassed(lustrationPassed, antilustrationPassed);
 		connection.sendPacket(packet);
 	}
 }
