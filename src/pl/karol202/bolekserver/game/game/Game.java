@@ -30,6 +30,7 @@ public class Game
 	public Game(List<Player> players)
 	{
 		this.players = new ArrayList<>(players);
+		this.players.forEach(p -> p.init(this));
 		this.incomingActs = new Stack<>();
 		
 		this.actionsQueue = new ActionsQueue<>();
@@ -80,10 +81,16 @@ public class Game
 	
 	void nextTurn()
 	{
+		notifyPlayersNextTurn();
 		assignPresidentPosition(getNextPlayer(president));
 		endPrimeMinisterTerm();
 		letPresidentChoosePrimeMinister();
 		refillIncomingActsStack();
+	}
+	
+	private void notifyPlayersNextTurn()
+	{
+		players.forEach(Player::nextTurn);
 	}
 	
 	private void endPrimeMinisterTerm()
@@ -139,7 +146,8 @@ public class Game
 	private void primeMinisterChosen()
 	{
 		assignPrimeMinisterPosition(votedPrimeMinister);
-		letPresidentChooseActs();
+		if(primeMinister.getRole() == Role.BOLEK && passedLustrationActs >= 3) collaboratorsWin(WinCause.BOLEK_CHOOSED);
+		else letPresidentChooseActs();
 	}
 	
 	private void assignPrimeMinisterPosition(Player primeMinister)
@@ -185,13 +193,9 @@ public class Game
 	boolean dismissActByPrimeMinister(Player sender, Act act)
 	{
 		if(!choosingActsPrimeMinister || sender != primeMinister || !dismissAct(act) || currentActs.length != 1) return false;
-		Act lastAct = currentActs[0];
-		if(lastAct == Act.LUSTRATION) passedLustrationActs++;
-		else if(lastAct == Act.ANTILUSTRATION) passedAntilustrationActs++;
-		
+		passAct();
 		choosingActsPrimeMinister = false;
 		currentActs = null;
-		broadcastActPassed();
 		return true;
 	}
 	
@@ -210,6 +214,32 @@ public class Game
 		for(int i = 0; i < lustration; i++) currentActs[i] = Act.LUSTRATION;
 		for(int i = 0; i < antilustration; i++) currentActs[lustration + i] = Act.ANTILUSTRATION;
 		return true;
+	}
+	
+	private void passAct()
+	{
+		Act lastAct = currentActs[0];
+		if(lastAct == Act.LUSTRATION) passedLustrationActs++;
+		else if(lastAct == Act.ANTILUSTRATION) passedAntilustrationActs++;
+		broadcastActPassed();
+		
+		checkForWin();
+	}
+	
+	private void checkForWin()
+	{
+		if(passedLustrationActs >= 6) ministersWin();
+		else if(passedAntilustrationActs >= 5) collaboratorsWin(WinCause.ACTS_PASSED);
+	}
+	
+	private void ministersWin()
+	{
+		broadcastMinistersWin(WinCause.ACTS_PASSED);
+	}
+	
+	private void collaboratorsWin(WinCause cause)
+	{
+		broadcastCollaboratorsWin(cause);
 	}
 	
 	
@@ -312,6 +342,24 @@ public class Game
 	private void broadcastActPassed()
 	{
 		players.forEach(p -> p.sendActPassedMessage(passedLustrationActs, passedAntilustrationActs));
+	}
+	
+	private void broadcastMinistersWin(WinCause cause)
+	{
+		players.forEach(p -> {
+			if(p.getRole() == Role.MINISTER) p.sendWinMessage(cause);
+			else p.sendLossMessage(cause);
+			p.reset();
+		});
+	}
+	
+	private void broadcastCollaboratorsWin(WinCause cause)
+	{
+		players.forEach(p -> {
+			if(p.getRole() != Role.MINISTER) p.sendWinMessage(cause);
+			else p.sendLossMessage(cause);
+			p.reset();
+		});
 	}
 	
 	public void executeActions()

@@ -92,7 +92,6 @@ public class GameServer
 	private void startGame()
 	{
 		users.forEach(u -> u.setReady(false));
-		
 		List<Player> players = users.stream().map(u -> new Player(u, u.getAdapter())).collect(Collectors.toList());
 		game = new Game(players);
 		game.addActionAndReturnImmediately(new GameActionStartGame());

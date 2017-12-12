@@ -97,9 +97,12 @@ public class Connection
 	
 	private void executePacket(InputPacket packet)
 	{
-		if(packet instanceof InputControlPacket) ((InputControlPacket) packet).execute(this, gameServersManager);
-		else if(packet instanceof InputServerPacket) ((InputServerPacket) packet).execute(this, gameServer);
-		else if(packet instanceof InputGamePacket) ((InputGamePacket) packet).execute(this, game);
+		if(packet instanceof InputControlPacket && gameServersManager != null)
+			((InputControlPacket) packet).execute(this, gameServersManager);
+		else if(packet instanceof InputServerPacket && gameServer != null)
+			((InputServerPacket) packet).execute(this, gameServer);
+		else if(packet instanceof InputGamePacket && game != null)
+			((InputGamePacket) packet).execute(this, game);
 	}
 	
 	public void sendPacket(OutputPacket packet)

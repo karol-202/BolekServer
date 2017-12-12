@@ -19,7 +19,11 @@ public class Player
 		this.user = user;
 		if(adapter instanceof UserAdapterConnection)
 			this.adapter = new PlayerAdapterConnection(((UserAdapterConnection) adapter).getConnection());
-		this.adapter.setPlayer(this);
+	}
+	
+	void init(Game game)
+	{
+		adapter.setGameAndPlayer(game, this);
 	}
 	
 	void assignRole(Role role)
@@ -105,6 +109,21 @@ public class Player
 	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed)
 	{
 		adapter.sendActPassedMessage(lustrationPassed, antilustrationPassed);
+	}
+	
+	void sendWinMessage(WinCause cause)
+	{
+		adapter.sendWinMessage(cause);
+	}
+	
+	void sendLossMessage(WinCause cause)
+	{
+		adapter.sendLossMessage(cause);
+	}
+	
+	void reset()
+	{
+		adapter.resetGameAndPlayer();
 	}
 	
 	public String getName()

@@ -4,7 +4,9 @@ import java.util.stream.Stream;
 
 public interface PlayerAdapter
 {
-	void setPlayer(Player player);
+	void setGameAndPlayer(Game game, Player player);
+	
+	void resetGameAndPlayer();
 	
 	void sendGameStartMessage(Stream<Player> players);
 	
@@ -33,4 +35,8 @@ public interface PlayerAdapter
 	void sendPrimeMinisterChoosingActsMessage();
 	
 	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed);
+	
+	void sendWinMessage(WinCause cause);
+	
+	void sendLossMessage(WinCause cause);
 }

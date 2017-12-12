@@ -1,9 +1,6 @@
 package pl.karol202.bolekserver.server;
 
-import pl.karol202.bolekserver.game.game.Act;
-import pl.karol202.bolekserver.game.game.Player;
-import pl.karol202.bolekserver.game.game.PlayerAdapter;
-import pl.karol202.bolekserver.game.game.Role;
+import pl.karol202.bolekserver.game.game.*;
 import pl.karol202.bolekserver.server.outputpacket.*;
 
 import java.util.stream.Stream;
@@ -18,9 +15,17 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void setPlayer(Player player)
+	public void setGameAndPlayer(Game game, Player player)
 	{
+		connection.setGame(game);
 		connection.setPlayer(player);
+	}
+	
+	@Override
+	public void resetGameAndPlayer()
+	{
+		connection.setGame(null);
+		connection.setPlayer(null);
 	}
 	
 	@Override
@@ -125,6 +130,20 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	public void sendActPassedMessage(int lustrationPassed, int antilustrationPassed)
 	{
 		OutputPacketActPassed packet = new OutputPacketActPassed(lustrationPassed, antilustrationPassed);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendWinMessage(WinCause cause)
+	{
+		OutputPacketWin packet = new OutputPacketWin(cause);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendLossMessage(WinCause cause)
+	{
+		OutputPacketLoss packet = new OutputPacketLoss(cause);
 		connection.sendPacket(packet);
 	}
 }
