@@ -4,28 +4,44 @@ import pl.karol202.bolekserver.game.ActionsQueue;
 import pl.karol202.bolekserver.server.Utils;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class Game
 {
 	private List<Player> players;
+	private boolean gameEnd;
+	
 	private Player president;
 	private Player primeMinister;
-	private Stack<Act> incomingActs;
-	private int passedLustrationActs;
-	private int passedAntilustrationActs;
+	private boolean extraordinaryPresident;
+	private boolean doNotChangePresident;
+	
+	//Failed voting
+	private int pollIndex;
+	private Player previousPresident;
+	private Player previousPrimeMinister;
 	
 	private boolean choosingPrimeMinister;
 	private boolean votingOnPrimeMinister;
 	private Player votedPrimeMinister;
 	private Map<Player, Boolean> votes;
-	private int failedVotings;
+	
+	private Stack<Act> incomingActs;
+	private int passedLustrationActs;
+	private int passedAntilustrationActs;
 	
 	private boolean choosingActsPresident;
 	private boolean choosingActsPrimeMinister;
 	private Act[] currentActs;
 	
+	private boolean checkingPlayerByPresident;
+	private boolean checkingPlayerOrActsByPresident;
+	private boolean choosingPresident;
+	private boolean lustratingByPresident;
+	
 	private ActionsQueue<GameAction> actionsQueue;
+	private OnGameEndListener onGameEndListener;
 	
 	public Game(List<Player> players)
 	{
@@ -36,13 +52,21 @@ public class Game
 		this.actionsQueue = new ActionsQueue<>();
 	}
 	
+	private void removePlayer(Player player)
+	{
+		players.remove(player);
+		//TODO Wysłać powiadomienie o aktualizacji listy graczy
+		//TODO Sprawdzić pod kątek bycia prezydentem
+		if(player == primeMinister) primeMinister = null;
+		else if(player == previousPrimeMinister) previousPrimeMinister = null;
+	}
+	
 	void startGame()
 	{
 		broadcastGameStart();
 		assignRoles();
 		assignPresidentPosition(getRandomPlayer());
 		letPresidentChoosePrimeMinister();
-		refillIncomingActsStack();
 	}
 	
 	private void assignRoles()
@@ -58,16 +82,11 @@ public class Game
 		sendCollaboratorsRevealmentMessages();
 	}
 	
-	private void assignPresidentPosition(Player president)
+	void nextTurn()
 	{
-		this.president = president;
-		broadcastPresidentAssignment();
-	}
-	
-	private void letPresidentChoosePrimeMinister()
-	{
-		choosingPrimeMinister = true;
-		sendPrimeMinisterChooseRequest();
+		assignNextPresident();
+		endPrimeMinisterTerm();
+		letPresidentChoosePrimeMinister();
 	}
 	
 	private void refillIncomingActsStack()
@@ -77,35 +96,53 @@ public class Game
 		for(int i = 0; i < Act.LUSTRATION.getCount(); i++) incomingActs.push(Act.LUSTRATION);
 		for(int i = 0; i < Act.ANTILUSTRATION.getCount(); i++) incomingActs.push(Act.ANTILUSTRATION);
 		Collections.shuffle(incomingActs);
+		
+		broadcastStackRefill();
 	}
 	
-	void nextTurn()
+	private void assignNextPresident()
 	{
-		notifyPlayersNextTurn();
-		assignPresidentPosition(getNextPlayer(president));
-		endPrimeMinisterTerm();
-		letPresidentChoosePrimeMinister();
-		refillIncomingActsStack();
+		if(doNotChangePresident)
+		{
+			doNotChangePresident = false;
+			return;
+		}
+		//                            Nie powinno mieć miejsca
+		if(!extraordinaryPresident || previousPresident == null) assignPresidentPosition(getNextPlayer(president));
+		else assignPresidentPosition(getNextPlayer(previousPresident));
+		extraordinaryPresident = false;
 	}
 	
-	private void notifyPlayersNextTurn()
+	private void assignPresidentPosition(Player president)
 	{
-		players.forEach(Player::nextTurn);
+		previousPresident = this.president;
+		this.president = president;
+		broadcastPresidentAssignment();
 	}
 	
 	private void endPrimeMinisterTerm()
 	{
-		if(primeMinister == null) return;
-		primeMinister.endTerm();
+		this.previousPrimeMinister = primeMinister;
 		primeMinister = null;
 		broadcastPrimeMinisterAssignment();
+	}
+	
+	private void letPresidentChoosePrimeMinister()
+	{
+		choosingPrimeMinister = true;
+		sendPrimeMinisterChooseRequest();
+	}
+	
+	private boolean canPlayerBePrimeMinister(Player player)
+	{
+		return player != president && player != previousPresident && player != previousPrimeMinister;
 	}
 	
 	boolean choosePrimeMinister(Player sender, String name)
 	{
 		if(!choosingPrimeMinister || sender != president) return false;
 		Player player = getPlayerByName(name);
-		if(player == null || !player.canBePrimeMinisterNow()) return false;
+		if(player == null || !canPlayerBePrimeMinister(player)) return false;
 		
 		choosingPrimeMinister = false;
 		votingOnPrimeMinister = true;
@@ -146,7 +183,8 @@ public class Game
 	private void primeMinisterChosen()
 	{
 		assignPrimeMinisterPosition(votedPrimeMinister);
-		if(primeMinister.getRole() == Role.BOLEK && passedLustrationActs >= 3) collaboratorsWin(WinCause.BOLEK_CHOOSED);
+		resetPollIndex();
+		if(primeMinister.isBolek() && passedAntilustrationActs >= 3) collaboratorsWin(WinCause.BOLEK);
 		else letPresidentChooseActs();
 	}
 	
@@ -154,13 +192,42 @@ public class Game
 	{
 		this.primeMinister = primeMinister;
 		broadcastPrimeMinisterAssignment();
-		failedVotings = 0;
+	}
+	
+	private void resetPollIndex()
+	{
+		pollIndex = 0;
+		broadcastPollIndexChange();
 	}
 	
 	private void primeMinisterNotChosen()
 	{
-		failedVotings++;
+		incrementPollIndex();
 		addActionAndReturnImmediately(new GameActionNextTurn());
+	}
+	
+	private void incrementPollIndex()
+	{
+		pollIndex++;
+		broadcastPollIndexChange();
+		if(pollIndex >= 3) pollIndexOverflow();
+	}
+	
+	private void pollIndexOverflow()
+	{
+		passRandomAct();
+		previousPresident = null;
+		previousPrimeMinister = null;
+		resetPollIndex();
+	}
+	
+	private void passRandomAct()
+	{
+		broadcastRandomActMessage();
+		currentActs = new Act[] { incomingActs.pop() };
+		refillIncomingActsStack();
+		passAct();
+		currentActs = null;
 	}
 	
 	private void endVoting()
@@ -174,8 +241,8 @@ public class Game
 	{
 		choosingActsPresident = true;
 		choosingPrimeMinister = false;
-		//TODO Sprawdzić czy są jeszcze ustawy
 		currentActs = new Act[] { incomingActs.pop(), incomingActs.pop(), incomingActs.pop() };
+		refillIncomingActsStack();
 		sendChooseActsRequestToPresident();
 		broadcastPresidentChoosingActs();
 	}
@@ -218,28 +285,143 @@ public class Game
 	
 	private void passAct()
 	{
+		if(currentActs == null || currentActs.length == 0) return;
 		Act lastAct = currentActs[0];
 		if(lastAct == Act.LUSTRATION) passedLustrationActs++;
 		else if(lastAct == Act.ANTILUSTRATION) passedAntilustrationActs++;
-		broadcastActPassed();
+		else return;
 		
+		broadcastActPassed();
 		checkForWin();
+		if(gameEnd) return;
+		
+		if(lastAct == Act.ANTILUSTRATION) antilustrationActPassed();
+		else addActionAndReturnImmediately(new GameActionNextTurn());
 	}
 	
 	private void checkForWin()
 	{
-		if(passedLustrationActs >= 6) ministersWin();
+		if(passedLustrationActs >= 6) ministersWin(WinCause.ACTS_PASSED);
 		else if(passedAntilustrationActs >= 5) collaboratorsWin(WinCause.ACTS_PASSED);
 	}
 	
-	private void ministersWin()
+	private void ministersWin(WinCause cause)
 	{
-		broadcastMinistersWin(WinCause.ACTS_PASSED);
+		broadcastMinistersWin(cause);
+		gameEnd();
 	}
 	
 	private void collaboratorsWin(WinCause cause)
 	{
 		broadcastCollaboratorsWin(cause);
+		gameEnd();
+	}
+	
+	private void gameEnd()
+	{
+		gameEnd = true;
+		if(onGameEndListener != null) onGameEndListener.onGameEnd();
+	}
+	
+	private void antilustrationActPassed()
+	{
+		if(passedAntilustrationActs == 1) letPresidentCheckPlayer();
+		else if(passedAntilustrationActs == 2) letPresidentCheckPlayerOrActs();
+		else if(passedAntilustrationActs == 3) letPresidentChooseNewPresident();
+		else if(passedAntilustrationActs == 4) letPresidentLustratePlayer();
+	}
+	
+	private void letPresidentCheckPlayer()
+	{
+		checkingPlayerByPresident = true;
+		broadcastPresidentCheckingPlayer();
+		sendPlayerCheckRequestToPresident();
+	}
+	
+	boolean checkPlayerByPresident(Player sender, String checkedPlayer)
+	{
+		if(!checkingPlayerByPresident || sender != president) return false;
+		Player player = getPlayerByName(checkedPlayer);
+		if(player == null || player.wasChecked()) return false;
+		
+		checkingPlayerByPresident = false;
+		player.setChecked();
+		
+		sendPlayerCheckingResultToPresident(player.isCollaborator() || player.isBolek() ? 1 : 0);
+		broadcastPresidentCheckedPlayerMessage(player);
+		addActionAndReturnImmediately(new GameActionNextTurn());
+		return true;
+	}
+	
+	private void letPresidentCheckPlayerOrActs()
+	{
+		checkingPlayerOrActsByPresident = true;
+		broadcastPresidentCheckingPlayerOrActsMessage();
+		sendPlayerOrActsCheckingChooseRequestToPresident();
+	}
+	
+	boolean choosePlayerOrActsCheckingByPresident(Player sender, int choice)
+	{
+		if(!checkingPlayerOrActsByPresident || sender != president || !(choice == 0 || choice == 1)) return false;
+		
+		checkingPlayerOrActsByPresident = false;
+		if(choice == 0) letPresidentCheckPlayer();
+		else checkActsByPresident();
+		return true;
+	}
+	
+	private void checkActsByPresident()
+	{
+		Act[] acts = new Act[] { incomingActs.peek(), incomingActs.peek(), incomingActs.peek() };
+		sendActsCheckingResultMessageToPresident(acts);
+		broadcastPresidentCheckedActsMessage();
+		addActionAndReturnImmediately(new GameActionNextTurn());
+	}
+	
+	private void letPresidentChooseNewPresident()
+	{
+		choosingPresident = true;
+		broadcastPresidentChoosingPresidentMessage();
+		sendChoosePresidentRequestToPresident();
+	}
+	
+	boolean choosePresident(Player sender, String president)
+	{
+		if(!choosingPresident || sender != this.president) return false;
+		Player player = getPlayerByName(president);
+		if(player == null) return false;
+		
+		choosingPresident = false;
+		assignPresidentPosition(player);
+		extraordinaryPresident = true;
+		doNotChangePresident = true;
+		
+		addActionAndReturnImmediately(new GameActionNextTurn());
+		return true;
+	}
+	
+	private void letPresidentLustratePlayer()
+	{
+		lustratingByPresident = true;
+		broadcastPresidentLustratingMessage();
+		sendLustrationRequestToPresident();
+	}
+	
+	boolean lustrateByPresident(Player sender, String playerName)
+	{
+		if(!lustratingByPresident || sender != president) return false;
+		Player player = getPlayerByName(playerName);
+		if(player == null || player == president) return false;
+		
+		lustratingByPresident = false;
+		sendYouAreLustratedMessage(player);
+		//Wysłać powiadomienie o wyjściu z gry do wyeliminowanego
+		removePlayer(player);
+		
+		broadcastPresidentLustratedMessage(player);
+		if(player.isBolek()) ministersWin(WinCause.BOLEK);
+		else addActionAndReturnImmediately(new GameActionNextTurn());
+		return true;
 	}
 	
 	
@@ -283,8 +465,20 @@ public class Game
 	
 	private void sendCollaboratorsRevealmentMessages()
 	{
-		Stream<Player> collaborators = players.stream().filter(p -> p.getRole() == Role.COLLABORATOR);
-		players.forEach(p -> p.sendCollaboratorsRevealmentMessage(collaborators));
+		Predicate<Player> filter = players.size() > 6 ? Player::isCollaborator :
+														p -> p.isCollaborator() || p.isBolek();
+		Stream<Player> targetPlayers = players.stream().filter(filter);
+		
+		Stream<Player> collaborators = players.stream().filter(Player::isCollaborator);
+		Player bolek = players.stream().filter(Player::isBolek).findAny().orElse(null);
+		if(bolek == null) return;
+		
+		targetPlayers.forEach(p -> p.sendCollaboratorsRevealmentMessage(collaborators, bolek));
+	}
+	
+	private void broadcastStackRefill()
+	{
+		players.forEach(p -> p.sendStackRefillMessage(Act.getTotalActsCount()));
 	}
 	
 	private void broadcastPresidentAssignment()
@@ -294,7 +488,7 @@ public class Game
 	
 	private void sendPrimeMinisterChooseRequest()
 	{
-		Stream<Player> candidates = players.stream().filter(Player::canBePrimeMinisterNow);
+		Stream<Player> candidates = players.stream().filter(this::canPlayerBePrimeMinister);
 		president.sendPrimeMinisterChooseRequest(candidates);
 	}
 	
@@ -317,6 +511,16 @@ public class Game
 	private void broadcastPrimeMinisterAssignment()
 	{
 		players.forEach(p -> p.sendPrimeMinisterAssignmentMessage(primeMinister));
+	}
+	
+	private void broadcastPollIndexChange()
+	{
+		players.forEach(p -> p.sendPollIndexChangeMessage(pollIndex));
+	}
+	
+	private void broadcastRandomActMessage()
+	{
+		players.forEach(Player::sendRandomActMessage);
 	}
 	
 	private void sendChooseActsRequestToPresident()
@@ -362,11 +566,82 @@ public class Game
 		});
 	}
 	
+	private void broadcastPresidentCheckingPlayer()
+	{
+		players.forEach(Player::sendPresidentCheckingPlayerMessage);
+	}
+	
+	private void sendPlayerCheckRequestToPresident()
+	{
+		Stream<Player> checkablePlayers = players.stream().filter(p -> !p.wasChecked());
+		president.sendPlayerCheckRequestToPresident(checkablePlayers);
+	}
+	
+	private void sendPlayerCheckingResultToPresident(int result)
+	{
+		president.sendPlayerCheckingResultToPresident(result);
+	}
+	
+	private void broadcastPresidentCheckedPlayerMessage(Player checkedPlayer)
+	{
+		players.forEach(p -> p.sendPresidentCheckedPlayerMessage(checkedPlayer));
+	}
+	
+	private void broadcastPresidentCheckingPlayerOrActsMessage()
+	{
+		players.forEach(Player::sendPresidentCheckingPlayerOrActsMessage);
+	}
+	
+	private void sendPlayerOrActsCheckingChooseRequestToPresident()
+	{
+		president.sendPlayerOrActsCheckingChooseRequestToPresident();
+	}
+	
+	private void sendActsCheckingResultMessageToPresident(Act[] acts)
+	{
+		president.sendActsCheckingResultMessageToPresident(acts);
+	}
+	
+	private void broadcastPresidentCheckedActsMessage()
+	{
+		players.forEach(Player::sendPresidentCheckedActsMessage);
+	}
+	
+	private void broadcastPresidentChoosingPresidentMessage()
+	{
+		players.forEach(Player::sendPresidentChoosingPresidentMessage);
+	}
+	
+	private void sendChoosePresidentRequestToPresident()
+	{
+		president.sendChoosePresidentRequestToPresident();
+	}
+	
+	private void broadcastPresidentLustratingMessage()
+	{
+		players.forEach(Player::sendPresidentLustratingMessage);
+	}
+	
+	private void sendLustrationRequestToPresident()
+	{
+		president.sendLustrationRequestToPresident();
+	}
+	
+	private void sendYouAreLustratedMessage(Player lustrated)
+	{
+		lustrated.sendYouAreLustratedMessage();
+	}
+	
+	private void broadcastPresidentLustratedMessage(Player player)
+	{
+		players.forEach(p -> p.sendPresidentLustratedMessage(player, player.isBolek()));
+	}
+	
 	public void executeActions()
 	{
-		while(!actionsQueue.isEmpty())
+		while(actionsQueue.hasUnprocessedActions())
 		{
-			GameAction action = actionsQueue.pollAction();
+			GameAction action = actionsQueue.peekAction();
 			Object result = action.execute(this);
 			actionsQueue.setResult(action, result);
 		}
@@ -377,15 +652,22 @@ public class Game
 		if(action == null) return null;
 		actionsQueue.addAction(action);
 		
-		Object result;
-		do result = actionsQueue.getResult(action);
-		while(result == null);
+		do Thread.yield();
+		while(!actionsQueue.isResultSetForAction(action));
 		
+		Object result = actionsQueue.getResult(action);
+		actionsQueue.removeAction(action);
 		return (R) result;
 	}
 	
 	public void addActionAndReturnImmediately(GameAction action)
 	{
 		if(action != null) actionsQueue.addAction(action);
+	}
+	
+	//TDOD Użyć tej metody
+	public void setOnGameEndListener(OnGameEndListener onGameEndListener)
+	{
+		this.onGameEndListener = onGameEndListener;
 	}
 }

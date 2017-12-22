@@ -2,8 +2,8 @@ package pl.karol202.bolekserver.game.game;
 
 public enum Act
 {
-	LUSTRATION(9),
-	ANTILUSTRATION(9);
+	LUSTRATION(6),
+	ANTILUSTRATION(11);
 	
 	private int count;
 	
@@ -22,5 +22,12 @@ public enum Act
 		if(act.equals(LUSTRATION.name())) return LUSTRATION;
 		else if(act.equals(ANTILUSTRATION.name())) return ANTILUSTRATION;
 		else return null;
+	}
+	
+	public static int getTotalActsCount()
+	{
+		int total = 0;
+		for(Act act : values()) total += act.count;
+		return total;
 	}
 }

@@ -8,10 +8,12 @@ import java.util.List;
 public class OutputPacketCollaboratorsRevealment implements OutputPacket
 {
 	private List<String> collaborators;
+	private String bolek;
 	
-	public OutputPacketCollaboratorsRevealment()
+	public OutputPacketCollaboratorsRevealment(String bolek)
 	{
 		this.collaborators = new ArrayList<>();
+		this.bolek = bolek;
 	}
 	
 	@Override
@@ -19,6 +21,7 @@ public class OutputPacketCollaboratorsRevealment implements OutputPacket
 	{
 		bundle.putInt("collaborators", collaborators.size());
 		for(int i = 0; i < collaborators.size(); i++) bundle.putString("collborator" + i, collaborators.get(i));
+		bundle.putString("bolek", bolek);
 	}
 	
 	@Override

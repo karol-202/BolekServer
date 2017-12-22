@@ -12,7 +12,9 @@ public interface PlayerAdapter
 	
 	void sendRoleAssignmentMessage(Role role);
 	
-	void sendCollaboratorsRevealmentMessages(Stream<Player> collaborators);
+	void sendCollaboratorsRevealmentMessages(Stream<Player> collaborators, Player bolek);
+	
+	void sendStackRefillMessage(int totalActs);
 	
 	void sendPresidentAssignmentMessage(Player president);
 	
@@ -25,6 +27,10 @@ public interface PlayerAdapter
 	void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed);
 	
 	void sendPrimeMinisterAssignmentMessage(Player primeMinister);
+	
+	void sendPollIndexChangeMessage(int pollIndex);
+	
+	void sendRandomActMessage();
 	
 	void sendChooseActsRequestToPresident(Act[] acts);
 	
@@ -39,4 +45,32 @@ public interface PlayerAdapter
 	void sendWinMessage(WinCause cause);
 	
 	void sendLossMessage(WinCause cause);
+	
+	void sendPresidentCheckingPlayerMessage();
+	
+	void sendPlayerCheckRequestToPresident(Stream<Player> checkablePlayers);
+	
+	void sendPlayerCheckingResultToPresident(int result);
+	
+	void sendPresidentCheckedPlayerMessage(Player checkedPlayer);
+	
+	void sendPresidentCheckingPlayerOrActsMessage();
+	
+	void sendPlayerOrActsCheckingChooseRequestToPresident();
+	
+	void sendActsCheckingResultMessageToPresident(Act[] acts);
+	
+	void sendPresidentCheckedActsMessage();
+	
+	void sendPresidentChoosingPresidentMessage();
+	
+	void sendChoosePresidentRequestToPresident();
+	
+	void sendPresidentLustratingMessage();
+	
+	void sendLustrationRequestToPresident();
+	
+	void sendYouAreLustratedMessage();
+	
+	void sendPresidentLustratedMessage(Player player, boolean bolek);
 }

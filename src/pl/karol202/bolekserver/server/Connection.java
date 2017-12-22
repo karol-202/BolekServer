@@ -31,7 +31,7 @@ public class Connection
 		this.gameServersManager = gameServersManager;
 	}
 	
-	public boolean connect(Socket socket)
+	boolean connect(Socket socket)
 	{
 		return tryToInitConnection(socket);
 	}
@@ -57,7 +57,7 @@ public class Connection
 		this.outputStream = socket.getOutputStream();
 	}
 	
-	public void run()
+	void run()
 	{
 		if(isConnected()) tryToListen();
 	}
@@ -76,12 +76,14 @@ public class Connection
 	
 	private void listen() throws IOException
 	{
-		while(true)
+		Server.LOGGER.info("Listening...");
+		while(isConnected())
 		{
 			InputPacket packet = receivePacket();
 			if(packet != null) executePacket(packet);
 			else break;
 		}
+		closeSocket();
 	}
 	
 	private InputPacket receivePacket() throws IOException
@@ -92,7 +94,9 @@ public class Connection
 		int bytesRead = inputStream.read(bytes);
 		if(bytesRead != length) return null;
 		
-		return InputPacketFactory.createPacket(bytes);
+		InputPacket packet = InputPacketFactory.createPacket(bytes);
+		Server.LOGGER.info("Packet received: " + (packet != null ? packet.toString() : "corrupted"));
+		return packet;
 	}
 	
 	private void executePacket(InputPacket packet)
@@ -109,6 +113,7 @@ public class Connection
 	{
 		try
 		{
+			Server.LOGGER.info("Sending packet: " + packet);
 			writePacket(packet);
 		}
 		catch(IOException e)
@@ -120,7 +125,7 @@ public class Connection
 	private void writePacket(OutputPacket packet) throws IOException
 	{
 		byte[] bytes = OutputPacketEncoder.encodePacket(packet);
-		if(bytes == null || bytes.length == 0 && !isConnected()) return;
+		if(bytes == null || bytes.length == 0 || !isConnected()) return;
 		outputStream.write(Utils.writeInt(bytes.length));
 		outputStream.write(bytes);
 	}
@@ -130,6 +135,7 @@ public class Connection
 		if(!isConnected()) return;
 		try
 		{
+			Server.LOGGER.info("Closing socket");
 			socket.close();
 		}
 		catch(IOException e)

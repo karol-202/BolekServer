@@ -44,10 +44,17 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendCollaboratorsRevealmentMessages(Stream<Player> collaborators)
+	public void sendCollaboratorsRevealmentMessages(Stream<Player> collaborators, Player bolek)
 	{
-		OutputPacketCollaboratorsRevealment packet = new OutputPacketCollaboratorsRevealment();
+		OutputPacketCollaboratorsRevealment packet = new OutputPacketCollaboratorsRevealment(bolek.getName());
 		collaborators.forEach(p -> packet.addCollaborator(p.getName()));
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendStackRefillMessage(int totalActs)
+	{
+		OutputPacketStackRefilled packet = new OutputPacketStackRefilled(totalActs);
 		connection.sendPacket(packet);
 	}
 	
@@ -93,6 +100,20 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	{
 		String name = primeMinister != null ? primeMinister.getName() : "";
 		OutputPacketPrimeMinisterAssigned packet = new OutputPacketPrimeMinisterAssigned(name);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPollIndexChangeMessage(int pollIndex)
+	{
+		OutputPacketPollIndexChange packet = new OutputPacketPollIndexChange(pollIndex);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendRandomActMessage()
+	{
+		OutputPacketRandomAct packet = new OutputPacketRandomAct();
 		connection.sendPacket(packet);
 	}
 	
@@ -144,6 +165,106 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	public void sendLossMessage(WinCause cause)
 	{
 		OutputPacketLoss packet = new OutputPacketLoss(cause);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentCheckingPlayerMessage()
+	{
+		OutputPacketPresidentCheckingPlayer packet = new OutputPacketPresidentCheckingPlayer();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPlayerCheckRequestToPresident(Stream<Player> checkablePlayers)
+	{
+		OutputPacketCheckPlayerPresident packet = new OutputPacketCheckPlayerPresident();
+		checkablePlayers.forEach(p -> packet.addCheckablePlayer(p.getName()));
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPlayerCheckingResultToPresident(int result)
+	{
+		OutputPacketPlayerCheckingResult packet = new OutputPacketPlayerCheckingResult(result);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentCheckedPlayerMessage(Player checkedPlayer)
+	{
+		OutputPacketPresidentCheckedPlayer packet = new OutputPacketPresidentCheckedPlayer(checkedPlayer.getName());
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentCheckingPlayerOrActsMessage()
+	{
+		OutputPacketPresidentCheckingPlayerOrActs packet = new OutputPacketPresidentCheckingPlayerOrActs();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPlayerOrActsCheckingChooseRequestToPresident()
+	{
+		OutputPacketChoosePlayerOrActsCheckingPresident packet = new OutputPacketChoosePlayerOrActsCheckingPresident();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendActsCheckingResultMessageToPresident(Act[] acts)
+	{
+		String[] strings = Stream.of(acts).map(Enum::name).toArray(String[]::new);
+		OutputPacketActsCheckingResult packet = new OutputPacketActsCheckingResult(strings);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentCheckedActsMessage()
+	{
+		OutputPacketPresidentCheckedActs packet = new OutputPacketPresidentCheckedActs();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentChoosingPresidentMessage()
+	{
+		OutputPacketPresidentChoosingPresident packet = new OutputPacketPresidentChoosingPresident();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendChoosePresidentRequestToPresident()
+	{
+		OutputPacketChoosePresident packet = new OutputPacketChoosePresident();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentLustratingMessage()
+	{
+		OutputPacketPresidentLustrating packet = new OutputPacketPresidentLustrating();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendLustrationRequestToPresident()
+	{
+		OutputPacketLustratePresident packet = new OutputPacketLustratePresident();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendYouAreLustratedMessage()
+	{
+		OutputPacketYouAreLustrated packet = new OutputPacketYouAreLustrated();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentLustratedMessage(Player player, boolean bolek)
+	{
+		OutputPacketPresidentLustrated packet = new OutputPacketPresidentLustrated(player.getName(), bolek);
 		connection.sendPacket(packet);
 	}
 }

@@ -10,9 +10,12 @@ public class Main
 	
 	private Main()
 	{
+		Server.configureLogger();
+		
 		gameServersManager = new GameServersManager();
-		server = new Server(gameServersManager);
 		runGameManagerThread();
+		
+		server = new Server(gameServersManager);
 	}
 	
 	private void runGameManagerThread()

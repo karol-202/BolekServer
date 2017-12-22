@@ -46,7 +46,7 @@ public class GameServersManager
 		mainLoop:
 		while(true)
 		{
-			code = (random.nextInt() % 9000) + 1000;
+			code = Math.abs(random.nextInt() % 9000) + 1000;
 			
 			for(GameServer server : servers)
 				if(code == server.getServerCode()) continue mainLoop;
@@ -67,14 +67,15 @@ public class GameServersManager
 	
 	private void executeActions()
 	{
-		while(!actionsQueue.isEmpty())
+		while(actionsQueue.hasUnprocessedActions())
 		{
-			ConnectionAction action = actionsQueue.pollAction();
+			ConnectionAction action = actionsQueue.peekAction();
 			Object result = action.execute(this);
 			actionsQueue.setResult(action, result);
 		}
 		servers.forEach(GameServer::executeActions);
 		removeRidiculousServers();
+		Thread.yield();
 	}
 	
 	public void suspend()
@@ -87,10 +88,11 @@ public class GameServersManager
 		if(action == null) return null;
 		actionsQueue.addAction(action);
 		
-		Object result;
-		do result = actionsQueue.getResult(action);
-		while(result == null);
+		do Thread.yield();
+		while(!actionsQueue.isResultSetForAction(action));
 		
+		Object result = actionsQueue.getResult(action);
+		actionsQueue.removeAction(action);
 		return (R) result;
 	}
 }

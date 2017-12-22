@@ -12,7 +12,7 @@ public class Player
 	private User user;
 	private PlayerAdapter adapter;
 	private Role role;
-	private boolean canBePrimeMinister;
+	private boolean checked;
 	
 	public Player(User user, UserAdapter adapter)
 	{
@@ -31,16 +31,6 @@ public class Player
 		if(this.role == null) this.role = role;
 	}
 	
-	void endTerm()
-	{
-		canBePrimeMinister = false;
-	}
-	
-	void nextTurn()
-	{
-		canBePrimeMinister = true;
-	}
-	
 	void sendGameStartMessage(Stream<Player> players)
 	{
 		adapter.sendGameStartMessage(players);
@@ -51,9 +41,14 @@ public class Player
 		adapter.sendRoleAssignmentMessage(role);
 	}
 	
-	void sendCollaboratorsRevealmentMessage(Stream<Player> collaborators)
+	void sendCollaboratorsRevealmentMessage(Stream<Player> collaborators, Player bolek)
 	{
-		adapter.sendCollaboratorsRevealmentMessages(collaborators);
+		adapter.sendCollaboratorsRevealmentMessages(collaborators, bolek);
+	}
+	
+	void sendStackRefillMessage(int totalActs)
+	{
+		adapter.sendStackRefillMessage(totalActs);
 	}
 	
 	void sendPresidentAssignmentMessage(Player player)
@@ -84,6 +79,16 @@ public class Player
 	void sendPrimeMinisterAssignmentMessage(Player player)
 	{
 		adapter.sendPrimeMinisterAssignmentMessage(player);
+	}
+	
+	void sendPollIndexChangeMessage(int pollIndex)
+	{
+		adapter.sendPollIndexChangeMessage(pollIndex);
+	}
+	
+	void sendRandomActMessage()
+	{
+		adapter.sendRandomActMessage();
 	}
 	
 	void sendChooseActsRequestToPresident(Act[] acts)
@@ -121,6 +126,76 @@ public class Player
 		adapter.sendLossMessage(cause);
 	}
 	
+	void sendPresidentCheckingPlayerMessage()
+	{
+		adapter.sendPresidentCheckingPlayerMessage();
+	}
+	
+	void sendPlayerCheckRequestToPresident(Stream<Player> checkablePlayers)
+	{
+		adapter.sendPlayerCheckRequestToPresident(checkablePlayers);
+	}
+	
+	void sendPlayerCheckingResultToPresident(int result)
+	{
+		adapter.sendPlayerCheckingResultToPresident(result);
+	}
+	
+	void sendPresidentCheckedPlayerMessage(Player checkedPlayer)
+	{
+		adapter.sendPresidentCheckedPlayerMessage(checkedPlayer);
+	}
+	
+	void sendPresidentCheckingPlayerOrActsMessage()
+	{
+		adapter.sendPresidentCheckingPlayerOrActsMessage();
+	}
+	
+	void sendPlayerOrActsCheckingChooseRequestToPresident()
+	{
+		adapter.sendPlayerOrActsCheckingChooseRequestToPresident();
+	}
+	
+	void sendActsCheckingResultMessageToPresident(Act[] acts)
+	{
+		adapter.sendActsCheckingResultMessageToPresident(acts);
+	}
+	
+	void sendPresidentCheckedActsMessage()
+	{
+		adapter.sendPresidentCheckedActsMessage();
+	}
+	
+	void sendPresidentChoosingPresidentMessage()
+	{
+		adapter.sendPresidentChoosingPresidentMessage();
+	}
+	
+	void sendChoosePresidentRequestToPresident()
+	{
+		adapter.sendChoosePresidentRequestToPresident();
+	}
+	
+	void sendPresidentLustratingMessage()
+	{
+		adapter.sendPresidentLustratingMessage();
+	}
+	
+	void sendLustrationRequestToPresident()
+	{
+		adapter.sendLustrationRequestToPresident();
+	}
+	
+	void sendYouAreLustratedMessage()
+	{
+		adapter.sendYouAreLustratedMessage();
+	}
+	
+	void sendPresidentLustratedMessage(Player player, boolean bolek)
+	{
+		adapter.sendPresidentLustratedMessage(player, bolek);
+	}
+	
 	void reset()
 	{
 		adapter.resetGameAndPlayer();
@@ -136,8 +211,28 @@ public class Player
 		return role;
 	}
 	
-	boolean canBePrimeMinisterNow()
+	boolean isMinister()
 	{
-		return canBePrimeMinister;
+		return role == Role.MINISTER;
+	}
+	
+	boolean isCollaborator()
+	{
+		return role == Role.COLLABORATOR;
+	}
+	
+	boolean isBolek()
+	{
+		return role == Role.BOLEK;
+	}
+	
+	boolean wasChecked()
+	{
+		return checked;
+	}
+	
+	void setChecked()
+	{
+		this.checked = true;
 	}
 }

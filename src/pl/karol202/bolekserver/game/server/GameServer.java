@@ -35,7 +35,13 @@ public class GameServer
 	
 	User addNewUser(String username, Connection connection)
 	{
-		if(username == null || connection == null || users.size() >= MAX_USERS || isUsernameUsed(username)) return null;
+		if(username == null || username.isEmpty() || connection == null ||
+				users.size() >= MAX_USERS || isUsernameUsed(username))
+		{
+			shouldExist = false;
+			return null;
+		}
+		
 		broadcastUsersUpdate();
 		if(!shouldExist) shouldExist = true;
 		
@@ -99,13 +105,13 @@ public class GameServer
 	
 	public void executeActions()
 	{
-		while(!actionsQueue.isEmpty())
+		while(actionsQueue.hasUnprocessedActions())
 		{
-			ServerAction action = actionsQueue.pollAction();
+			ServerAction action = actionsQueue.peekAction();
 			Object result = action.execute(this);
 			actionsQueue.setResult(action, result);
 		}
-		game.executeActions();
+		if(game != null) game.executeActions();
 	}
 	
 	public <R> R addActionAndWaitForResult(ServerAction<R> action)
@@ -113,10 +119,11 @@ public class GameServer
 		if(action == null) return null;
 		actionsQueue.addAction(action);
 		
-		Object result;
-		do result = actionsQueue.getResult(action);
-		while(result == null);
+		do Thread.yield();
+		while(!actionsQueue.isResultSetForAction(action));
 		
+		Object result = actionsQueue.getResult(action);
+		actionsQueue.removeAction(action);
 		return (R) result;
 	}
 	

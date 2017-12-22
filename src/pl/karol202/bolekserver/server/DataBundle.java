@@ -11,7 +11,7 @@ public class DataBundle
 		private String key;
 		private T value;
 		
-		public Entry(String key, T value)
+		Entry(String key, T value)
 		{
 			this.key = key;
 			this.value = value;

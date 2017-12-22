@@ -8,10 +8,27 @@ public class ActionsQueue<A extends Action>
 	{
 		private A action;
 		private Object result;
+		private boolean processed;
 		
 		ActionAndResult(A action)
 		{
 			this.action = action;
+		}
+		
+		Object getResult()
+		{
+			return result;
+		}
+		
+		void setResult(Object result)
+		{
+			this.result = result;
+			this.processed = true;
+		}
+		
+		boolean isProcessed()
+		{
+			return processed;
 		}
 	}
 	
@@ -27,26 +44,43 @@ public class ActionsQueue<A extends Action>
 		queue.add(new ActionAndResult(action));
 	}
 	
-	public A pollAction()
+	public void removeAction(A action)
 	{
-		return queue.poll().action;
+		ActionAndResult aar = null;
+		for(ActionAndResult actionAndResult : queue)
+			if(actionAndResult.action == action) aar = actionAndResult;
+		if(aar != null) queue.remove(aar);
 	}
 	
-	public boolean isEmpty()
+	public A peekAction()
 	{
-		return queue.isEmpty();
+		return queue.peek().action;
+	}
+	
+	public boolean hasUnprocessedActions()
+	{
+		for(ActionAndResult actionAndResult : queue)
+			if(!actionAndResult.isProcessed()) return true;
+		return false;
+	}
+	
+	public boolean isResultSetForAction(A action)
+	{
+		for(ActionAndResult actionAndResult : queue)
+			if(actionAndResult.action == action) return actionAndResult.isProcessed();
+		return false;
 	}
 	
 	public Object getResult(A action)
 	{
 		for(ActionAndResult actionAndResult : queue)
-			if(actionAndResult.action == action) return actionAndResult.result;
+			if(actionAndResult.action == action) return actionAndResult.getResult();
 		return null;
 	}
 	
 	public void setResult(A action, Object result)
 	{
 		for(ActionAndResult actionAndResult : queue)
-			if(actionAndResult.action == action) actionAndResult.result = result;
+			if(actionAndResult.action == action) actionAndResult.setResult(result);
 	}
 }

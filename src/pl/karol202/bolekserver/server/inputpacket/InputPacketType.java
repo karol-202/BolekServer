@@ -6,7 +6,14 @@ import java.util.stream.Stream;
 enum InputPacketType
 {
 	CREATESERVER(InputPacketCreateServer::new),
-	LOGIN(InputPacketLogin::new);
+	LOGIN(InputPacketLogin::new),
+	LOGOUT(InputPacketLogout::new),
+	GETUSERS(InputPacketGetUsers::new),
+	READY(InputPacketReady::new),
+	SETPRIMEMINISTER(InputPacketSetPrimeMinister::new),
+	PRIMEMINISTERVOTE(InputPacketPrimeMinisterVote::new),
+	DISMISSACTBYPRESIDENT(InputPacketDismissActByPresident::new),
+	DISMISSACTBYPRIMEMINISTER(InputPacketDismissActByPrimeMinister::new);
 	
 	private Supplier<InputPacket> packetSupplier;
 	
