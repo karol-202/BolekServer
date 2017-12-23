@@ -106,9 +106,24 @@ public class Player
 		adapter.sendChooseActsRequestToPrimeMinister(acts);
 	}
 	
+	void sendChooseActsOrVetoRequestToPrimeMinister(Act[] acts)
+	{
+		adapter.sendChooseActsOrVetoRequestToPrimeMinister(acts);
+	}
+	
 	void sendPrimeMinisterChoosingActsMessage()
 	{
 		adapter.sendPrimeMinisterChoosingActsMessage();
+	}
+	
+	void sendVetoRequest()
+	{
+		adapter.sendVetoRequest();
+	}
+	
+	void sendVetoResponseMessage(boolean accepted)
+	{
+		adapter.sendVetoResponseMessage(accepted);
 	}
 	
 	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed)

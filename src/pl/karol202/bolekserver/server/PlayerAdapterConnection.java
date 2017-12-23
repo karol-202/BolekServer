@@ -141,9 +141,30 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
+	public void sendChooseActsOrVetoRequestToPrimeMinister(Act[] acts)
+	{
+		OutputPacketChooseActsOrVetoPrimeMinister packet = new OutputPacketChooseActsOrVetoPrimeMinister();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
 	public void sendPrimeMinisterChoosingActsMessage()
 	{
 		OutputPacketPrimeMinisterChoosingActs packet = new OutputPacketPrimeMinisterChoosingActs();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendVetoRequest()
+	{
+		OutputPacketVetoRequest packet = new OutputPacketVetoRequest();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendVetoResponseMessage(boolean response)
+	{
+		OutputPacketVetoResponse packet = new OutputPacketVetoResponse(response);
 		connection.sendPacket(packet);
 	}
 	

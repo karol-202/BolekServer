@@ -1,0 +1,25 @@
+package pl.karol202.bolekserver.server.outputpacket;
+
+import pl.karol202.bolekserver.server.DataBundle;
+
+public class OutputPacketVetoResponse implements OutputPacket
+{
+	private boolean accepted;
+	
+	public OutputPacketVetoResponse(boolean accepted)
+	{
+		this.accepted = accepted;
+	}
+	
+	@Override
+	public void saveData(DataBundle bundle)
+	{
+		bundle.putInt("accepted", accepted ? 1 : 0);
+	}
+	
+	@Override
+	public String getName()
+	{
+		return "VETORESPONSE";
+	}
+}

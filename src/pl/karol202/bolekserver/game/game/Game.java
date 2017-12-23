@@ -33,6 +33,7 @@ public class Game
 	
 	private boolean choosingActsPresident;
 	private boolean choosingActsPrimeMinister;
+	private boolean vetoing;
 	private Act[] currentActs;
 	
 	private boolean checkingPlayerByPresident;
@@ -184,7 +185,7 @@ public class Game
 	{
 		assignPrimeMinisterPosition(votedPrimeMinister);
 		resetPollIndex();
-		if(primeMinister.isBolek() && passedAntilustrationActs >= 3) collaboratorsWin(WinCause.BOLEK);
+		if(primeMinister.isBolek() && isBolekCausingCollaboratorsWin()) collaboratorsWin(WinCause.BOLEK);
 		else letPresidentChooseActs();
 	}
 	
@@ -223,7 +224,7 @@ public class Game
 	
 	private void passRandomAct()
 	{
-		broadcastRandomActMessage();
+		broadcastRandomActPassed();
 		currentActs = new Act[] { incomingActs.pop() };
 		refillIncomingActsStack();
 		passAct();
@@ -252,7 +253,9 @@ public class Game
 		if(!choosingActsPresident || sender != president || !dismissAct(act)) return false;
 		choosingActsPresident = false;
 		choosingActsPrimeMinister = true;
-		sendChooseActsRequestToPrimeMinister();
+		
+		if(isVetoApplicable()) sendChooseActsOrVetoRequestToPrimeMinister();
+		else sendChooseActsRequestToPrimeMinister();
 		broadcastPrimeMinisterChoosingActs();
 		return true;
 	}
@@ -264,6 +267,40 @@ public class Game
 		choosingActsPrimeMinister = false;
 		currentActs = null;
 		return true;
+	}
+	
+	boolean requestVetoByPrimeMinister(Player sender)
+	{
+		if(!choosingActsPrimeMinister || sender != primeMinister || !isVetoApplicable()) return false;
+		choosingActsPrimeMinister = false;
+		vetoing = true;
+		
+		broadcastVetoRequest();
+		return true;
+	}
+	
+	boolean respondOnVeto(Player sender, boolean accept)
+	{
+		if(!vetoing || sender != president) return false;
+		vetoing = false;
+		
+		broadcastVetoResponse(accept);
+		if(accept) vetoAccepted();
+		else vetoRejected();
+		return true;
+	}
+	
+	private void vetoAccepted()
+	{
+		currentActs = null;
+		incrementPollIndex();
+		addActionAndReturnImmediately(new GameActionNextTurn());
+	}
+	
+	private void vetoRejected()
+	{
+		choosingActsPrimeMinister = true;
+		sendChooseActsRequestToPrimeMinister();
 	}
 	
 	private boolean dismissAct(Act actToDismiss)
@@ -301,8 +338,8 @@ public class Game
 	
 	private void checkForWin()
 	{
-		if(passedLustrationActs >= 6) ministersWin(WinCause.ACTS_PASSED);
-		else if(passedAntilustrationActs >= 5) collaboratorsWin(WinCause.ACTS_PASSED);
+		if(didMinistersWinByActs()) ministersWin(WinCause.ACTS_PASSED);
+		else if(didCollaboratorsWinByActs()) collaboratorsWin(WinCause.ACTS_PASSED);
 	}
 	
 	private void ministersWin(WinCause cause)
@@ -325,10 +362,10 @@ public class Game
 	
 	private void antilustrationActPassed()
 	{
-		if(passedAntilustrationActs == 1) letPresidentCheckPlayer();
-		else if(passedAntilustrationActs == 2) letPresidentCheckPlayerOrActs();
-		else if(passedAntilustrationActs == 3) letPresidentChooseNewPresident();
-		else if(passedAntilustrationActs == 4) letPresidentLustratePlayer();
+		if(canPresidentCheckPlayer()) letPresidentCheckPlayer();
+		else if(canPresidentCheckPlayerOrActs()) letPresidentCheckPlayerOrActs();
+		else if(canPresidentChoosePresident()) letPresidentChooseNewPresident();
+		else if(canPresidentLustratePlayer()) letPresidentLustratePlayer();
 	}
 	
 	private void letPresidentCheckPlayer()
@@ -425,6 +462,46 @@ public class Game
 	}
 	
 	
+	private boolean isBolekCausingCollaboratorsWin()
+	{
+		return passedAntilustrationActs >= 3;
+	}
+	
+	private boolean isVetoApplicable()
+	{
+		return passedAntilustrationActs >= 5;
+	}
+	
+	private boolean didMinistersWinByActs()
+	{
+		return passedLustrationActs >= 5;
+	}
+	
+	private boolean didCollaboratorsWinByActs()
+	{
+		return passedAntilustrationActs >= 6;
+	}
+	
+	private boolean canPresidentCheckPlayer()
+	{
+		return passedAntilustrationActs == 1;
+	}
+	
+	private boolean canPresidentCheckPlayerOrActs()
+	{
+		return passedAntilustrationActs == 2;
+	}
+	
+	private boolean canPresidentChoosePresident()
+	{
+		return passedAntilustrationActs == 3;
+	}
+	
+	private boolean canPresidentLustratePlayer()
+	{
+		return passedAntilustrationActs == 4 || passedAntilustrationActs == 5;
+	}
+	
 	private Player getRandomPlayerWithoutRole()
 	{
 		return getRandomPlayersWithoutRole().findFirst().orElse(null);
@@ -518,7 +595,7 @@ public class Game
 		players.forEach(p -> p.sendPollIndexChangeMessage(pollIndex));
 	}
 	
-	private void broadcastRandomActMessage()
+	private void broadcastRandomActPassed()
 	{
 		players.forEach(Player::sendRandomActMessage);
 	}
@@ -538,9 +615,24 @@ public class Game
 		primeMinister.sendChooseActsRequestToPrimeMinister(currentActs);
 	}
 	
+	private void sendChooseActsOrVetoRequestToPrimeMinister()
+	{
+		primeMinister.sendChooseActsOrVetoRequestToPrimeMinister(currentActs);
+	}
+	
 	private void broadcastPrimeMinisterChoosingActs()
 	{
 		players.stream().filter(p -> p != primeMinister).forEach(Player::sendPrimeMinisterChoosingActsMessage);
+	}
+	
+	private void broadcastVetoRequest()
+	{
+		players.forEach(Player::sendVetoRequest);
+	}
+	
+	private void broadcastVetoResponse(boolean accepted)
+	{
+		players.forEach(p -> p.sendVetoResponseMessage(accepted));
 	}
 	
 	private void broadcastActPassed()

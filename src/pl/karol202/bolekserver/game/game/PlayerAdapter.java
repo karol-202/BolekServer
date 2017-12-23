@@ -38,7 +38,13 @@ public interface PlayerAdapter
 	
 	void sendChooseActsRequestToPrimeMinister(Act[] acts);
 	
+	void sendChooseActsOrVetoRequestToPrimeMinister(Act[] acts);
+	
 	void sendPrimeMinisterChoosingActsMessage();
+	
+	void sendVetoRequest();
+	
+	void sendVetoResponseMessage(boolean response);
 	
 	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed);
 	
