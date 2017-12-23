@@ -5,10 +5,13 @@ import pl.karol202.bolekserver.server.Utils;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class Game
 {
+	private static final int MIN_PLAYERS = 3;
+	
 	private List<Player> players;
 	private boolean gameEnd;
 	
@@ -16,6 +19,7 @@ public class Game
 	private Player primeMinister;
 	private boolean extraordinaryPresident;
 	private boolean doNotChangePresident;
+	private Player nextPresident;
 	
 	//Failed voting
 	private int pollIndex;
@@ -55,11 +59,43 @@ public class Game
 	
 	private void removePlayer(Player player)
 	{
-		players.remove(player);
-		//TODO Wysłać powiadomienie o aktualizacji listy graczy
-		//TODO Sprawdzić pod kątek bycia prezydentem
-		if(player == primeMinister) primeMinister = null;
+		if(player == president || player == primeMinister) removePresidentOrPrimeMinister();
+		else if(player == previousPresident) previousPresident = null;
 		else if(player == previousPrimeMinister) previousPrimeMinister = null;
+		else if(player == nextPresident) nextPresident = getNextPlayer(nextPresident);
+		players.remove(player);
+		sendPlayersUpdatedMessage();
+		if(players.size() < MIN_PLAYERS) tooFewPlayers();
+	}
+	
+	private void removePresidentOrPrimeMinister()
+	{
+		resetState();
+		addActionAndReturnImmediately(new GameActionNextTurn());
+	}
+	
+	private void resetState()
+	{
+		choosingPrimeMinister = false;
+		votingOnPrimeMinister = false;
+		votedPrimeMinister = null;
+		votes = null;
+		
+		choosingActsPresident = false;
+		choosingActsPrimeMinister = false;
+		vetoing = false;
+		currentActs = null;
+		
+		checkingPlayerByPresident = false;
+		checkingPlayerOrActsByPresident = false;
+		choosingPresident = false;
+		lustratingByPresident = false;
+	}
+	
+	private void tooFewPlayers()
+	{
+		broadcastTooFewPlayersMessage();
+		gameEnd();
 	}
 	
 	void startGame()
@@ -75,9 +111,10 @@ public class Game
 		Player bolek = getRandomPlayerWithoutRole();
 		if(bolek != null) bolek.assignRole(Role.BOLEK);
 		
-		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(players.size())).forEach(p -> p.assignRole(Role.COLLABORATOR));
+		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(players.size()))
+									 .forEach(p -> p.assignRole(Role.COLLABORATOR));
 		
-		players.stream().filter(p -> p.getRole() == null).forEach(p -> p.assignRole(Role.MINISTER));
+		getRandomPlayersWithoutRole().forEach(p -> p.assignRole(Role.MINISTER));
 		
 		sendRoleAssignmentMessages();
 		sendCollaboratorsRevealmentMessages();
@@ -85,6 +122,7 @@ public class Game
 	
 	void nextTurn()
 	{
+		if(gameEnd) return;
 		assignNextPresident();
 		endPrimeMinisterTerm();
 		letPresidentChoosePrimeMinister();
@@ -109,9 +147,10 @@ public class Game
 			return;
 		}
 		//                            Nie powinno mieć miejsca
-		if(!extraordinaryPresident || previousPresident == null) assignPresidentPosition(getNextPlayer(president));
-		else assignPresidentPosition(getNextPlayer(previousPresident));
+		if(!extraordinaryPresident || nextPresident == null) assignPresidentPosition(getNextPlayer(president));
+		else assignPresidentPosition(nextPresident);
 		extraordinaryPresident = false;
+		nextPresident = null;
 	}
 	
 	private void assignPresidentPosition(Player president)
@@ -429,9 +468,11 @@ public class Game
 		if(player == null) return false;
 		
 		choosingPresident = false;
-		assignPresidentPosition(player);
+		
 		extraordinaryPresident = true;
 		doNotChangePresident = true;
+		nextPresident = getNextPlayer(this.president);
+		assignPresidentPosition(player);
 		
 		addActionAndReturnImmediately(new GameActionNextTurn());
 		return true;
@@ -452,13 +493,20 @@ public class Game
 		
 		lustratingByPresident = false;
 		sendYouAreLustratedMessage(player);
-		//Wysłać powiadomienie o wyjściu z gry do wyeliminowanego
+		sendGameExitedMessage(player);
 		removePlayer(player);
 		
 		broadcastPresidentLustratedMessage(player);
 		if(player.isBolek()) ministersWin(WinCause.BOLEK);
 		else addActionAndReturnImmediately(new GameActionNextTurn());
 		return true;
+	}
+	
+	void exitGame(Player player)
+	{
+		if(player == null) return;
+		removePlayer(player);
+		sendGameExitedMessage(player);
 	}
 	
 	
@@ -520,9 +568,9 @@ public class Game
 	
 	private Player getNextPlayer(Player player)
 	{
-		int playerNumber = players.indexOf(player);
-		if(++playerNumber >= players.size()) playerNumber = 0;
-		return players.get(playerNumber);
+		int playerId = players.indexOf(player);
+		if(++playerId >= players.size()) playerId = 0;
+		return players.get(playerId);
 	}
 	
 	private Player getPlayerByName(String name)
@@ -546,11 +594,11 @@ public class Game
 														p -> p.isCollaborator() || p.isBolek();
 		Stream<Player> targetPlayers = players.stream().filter(filter);
 		
-		Stream<Player> collaborators = players.stream().filter(Player::isCollaborator);
+		Supplier<Stream<Player>> collaboratorsSupplier = () -> players.stream().filter(Player::isCollaborator);
 		Player bolek = players.stream().filter(Player::isBolek).findAny().orElse(null);
 		if(bolek == null) return;
 		
-		targetPlayers.forEach(p -> p.sendCollaboratorsRevealmentMessage(collaborators, bolek));
+		targetPlayers.forEach(p -> p.sendCollaboratorsRevealmentMessage(collaboratorsSupplier.get(), bolek));
 	}
 	
 	private void broadcastStackRefill()
@@ -581,8 +629,9 @@ public class Game
 	
 	private void broadcastVotingResult(boolean passed)
 	{
-		Stream<Player> upvoters = votes.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey);
-		players.forEach(p -> p.sendVotingResultMessage(upvoters, votes.size(), passed));
+		Supplier<Stream<Player>> upvotersSupplier = () -> votes.entrySet().stream().filter(Map.Entry::getValue)
+																				   .map(Map.Entry::getKey);
+		players.forEach(p -> p.sendVotingResultMessage(upvotersSupplier.get(), votes.size(), passed));
 	}
 	
 	private void broadcastPrimeMinisterAssignment()
@@ -727,6 +776,22 @@ public class Game
 	private void broadcastPresidentLustratedMessage(Player player)
 	{
 		players.forEach(p -> p.sendPresidentLustratedMessage(player, player.isBolek()));
+	}
+	
+	private void sendGameExitedMessage(Player player)
+	{
+		player.sendGameExitedMessage();
+	}
+	
+	private void sendPlayersUpdatedMessage()
+	{
+		Supplier<Stream<Player>> playersSupplier = () -> players.stream();
+		players.forEach(p -> p.sendPlayersUpdatedMessage(playersSupplier.get()));
+	}
+	
+	private void broadcastTooFewPlayersMessage()
+	{
+		players.forEach(Player::sendTooFewPlayers);
 	}
 	
 	public void executeActions()

@@ -211,6 +211,21 @@ public class Player
 		adapter.sendPresidentLustratedMessage(player, bolek);
 	}
 	
+	void sendGameExitedMessage()
+	{
+		adapter.sendGameExitedMessage();
+	}
+	
+	void sendPlayersUpdatedMessage(Stream<Player> players)
+	{
+		adapter.sendPlayersUpdatedMessage(players);
+	}
+	
+	void sendTooFewPlayers()
+	{
+		adapter.sendTooFewPlayersMessage();
+	}
+	
 	void reset()
 	{
 		adapter.resetGameAndPlayer();

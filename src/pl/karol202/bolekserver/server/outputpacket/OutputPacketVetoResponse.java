@@ -14,7 +14,7 @@ public class OutputPacketVetoResponse implements OutputPacket
 	@Override
 	public void saveData(DataBundle bundle)
 	{
-		bundle.putInt("accepted", accepted ? 1 : 0);
+		bundle.putBoolean("accepted", accepted);
 	}
 	
 	@Override

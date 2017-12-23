@@ -14,7 +14,7 @@ public class InputPacketPrimeMinisterVote implements InputGamePacket
 	@Override
 	public void readData(DataBundle bundle)
 	{
-		vote = bundle.getInt("vote", 0) > 0;
+		vote = bundle.getBoolean("vote", false);
 	}
 	
 	@Override

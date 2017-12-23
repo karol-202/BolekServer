@@ -30,13 +30,13 @@ public class DataBundle
 	
 	private Map<String, String> stringEntries;
 	private Map<String, Integer> intEntries;
-	private Map<String, Float> floatEntries;
+	private Map<String, Boolean> booleanEntries;
 	
 	public DataBundle()
 	{
 		stringEntries = new HashMap<>();
 		intEntries = new HashMap<>();
-		floatEntries = new HashMap<>();
+		booleanEntries = new HashMap<>();
 	}
 	
 	public String getString(String key, String defaultValue)
@@ -49,9 +49,9 @@ public class DataBundle
 		return intEntries.getOrDefault(key, defaultValue);
 	}
 	
-	public float getFloat(String key, float defaultValue)
+	public boolean getBoolean(String key, boolean defaultValue)
 	{
-		return floatEntries.getOrDefault(key, defaultValue);
+		return booleanEntries.getOrDefault(key, defaultValue);
 	}
 	
 	public void putString(String key, String value)
@@ -64,9 +64,9 @@ public class DataBundle
 		intEntries.put(key, value);
 	}
 	
-	public void putFloat(String key, float value)
+	public void putBoolean(String key, boolean value)
 	{
-		floatEntries.put(key, value);
+		booleanEntries.put(key, value);
 	}
 	
 	public Stream<Entry<String>> getStringEntriesStream()
@@ -79,9 +79,9 @@ public class DataBundle
 		return getEntriesStream(intEntries);
 	}
 	
-	public Stream<Entry<Float>> getFloatEntriesStream()
+	public Stream<Entry<Boolean>> getBooleanEntriesStream()
 	{
-		return getEntriesStream(floatEntries);
+		return getEntriesStream(booleanEntries);
 	}
 	
 	private <T> Stream<Entry<T>> getEntriesStream(Map<String, T> entries)

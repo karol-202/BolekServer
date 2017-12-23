@@ -18,14 +18,19 @@ public class User
 		this.ready = false;
 	}
 	
-	void sendUsersList(Stream<User> users)
+	void sendUsersListMessage(Stream<User> users)
 	{
-		adapter.sendUsersList(users);
+		adapter.sendUsersListMessage(users);
 	}
 	
-	void sendUserReadiness(String username)
+	void sendUserReadinessMessage(String username)
 	{
-		adapter.sendUserReadiness(username);
+		adapter.sendUserReadinessMessage(username);
+	}
+	
+	void sendServerStatus(boolean gameAvailable)
+	{
+		adapter.sendServerStatusMessage(gameAvailable);
 	}
 	
 	public String getName()

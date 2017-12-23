@@ -14,7 +14,7 @@ public class InputPacketVetoResponse implements InputGamePacket
 	@Override
 	public void readData(DataBundle bundle)
 	{
-		accept = bundle.getInt("accepted", 0) == 1;
+		accept = bundle.getBoolean("accepted", false);
 	}
 	
 	@Override

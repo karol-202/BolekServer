@@ -2,6 +2,7 @@ package pl.karol202.bolekserver.server;
 
 import pl.karol202.bolekserver.game.server.User;
 import pl.karol202.bolekserver.game.server.UserAdapter;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacketServerStatus;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacketSetReady;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacketUsersUpdate;
 
@@ -17,7 +18,7 @@ public class UserAdapterConnection implements UserAdapter
 	}
 	
 	@Override
-	public void sendUsersList(Stream<User> users)
+	public void sendUsersListMessage(Stream<User> users)
 	{
 		OutputPacketUsersUpdate packet = new OutputPacketUsersUpdate();
 		users.forEach(u -> packet.addUser(u.getName()));
@@ -25,9 +26,16 @@ public class UserAdapterConnection implements UserAdapter
 	}
 	
 	@Override
-	public void sendUserReadiness(String username)
+	public void sendUserReadinessMessage(String username)
 	{
 		OutputPacketSetReady packet = new OutputPacketSetReady(username);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendServerStatusMessage(boolean gameAvailable)
+	{
+		OutputPacketServerStatus packet = new OutputPacketServerStatus(gameAvailable);
 		connection.sendPacket(packet);
 	}
 	

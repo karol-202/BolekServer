@@ -47,6 +47,8 @@ public class GameServer
 		
 		User user = new User(username, connection);
 		users.add(user);
+		
+		sendServerStatus(user);
 		return user;
 	}
 	
@@ -62,7 +64,7 @@ public class GameServer
 	
 	void sendUsersListToUser(User user)
 	{
-		if(user != null) user.getAdapter().sendUsersList(users.stream());
+		if(user != null) user.getAdapter().sendUsersListMessage(users.stream());
 	}
 	
 	void setUserReady(User user)
@@ -72,22 +74,7 @@ public class GameServer
 		broadcastUserReadiness(user.getName());
 		checkForReadiness();
 	}
-	
-	private void broadcastUsersUpdate()
-	{
-		users.forEach(u -> u.sendUsersList(users.stream()));
-	}
-	
-	private void broadcastUserReadiness(String username)
-	{
-		users.forEach(u -> u.sendUserReadiness(username));
-	}
-	
-	private boolean isUsernameUsed(String username)
-	{
-		return users.stream().anyMatch(u -> u.getName().equals(username));
-	}
-	
+
 	private void checkForReadiness()
 	{
 		if(users.size() < MIN_USERS) return;
@@ -100,7 +87,40 @@ public class GameServer
 		users.forEach(u -> u.setReady(false));
 		List<Player> players = users.stream().map(u -> new Player(u, u.getAdapter())).collect(Collectors.toList());
 		game = new Game(players);
+		game.setOnGameEndListener(this::onGameEnded);
 		game.addActionAndReturnImmediately(new GameActionStartGame());
+	}
+	
+	private void onGameEnded()
+	{
+		game = null;
+		broadcastServerStatus();
+	}
+	
+	
+	private boolean isUsernameUsed(String username)
+	{
+		return users.stream().anyMatch(u -> u.getName().equals(username));
+	}
+	
+	private void broadcastUsersUpdate()
+	{
+		users.forEach(u -> u.sendUsersListMessage(users.stream()));
+	}
+	
+	private void broadcastUserReadiness(String username)
+	{
+		users.forEach(u -> u.sendUserReadinessMessage(username));
+	}
+	
+	private void broadcastServerStatus()
+	{
+		users.forEach(this::sendServerStatus);
+	}
+	
+	private void sendServerStatus(User user)
+	{
+		user.sendServerStatus(game == null);
 	}
 	
 	public void executeActions()

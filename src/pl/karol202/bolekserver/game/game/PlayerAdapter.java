@@ -79,4 +79,10 @@ public interface PlayerAdapter
 	void sendYouAreLustratedMessage();
 	
 	void sendPresidentLustratedMessage(Player player, boolean bolek);
+	
+	void sendGameExitedMessage();
+	
+	void sendPlayersUpdatedMessage(Stream<Player> player);
+	
+	void sendTooFewPlayersMessage();
 }

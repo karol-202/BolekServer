@@ -17,7 +17,7 @@ public class OutputPacketPresidentLustrated implements OutputPacket
 	public void saveData(DataBundle bundle)
 	{
 		bundle.putString("player", player);
-		bundle.putInt("bolek", bolek ? 1 : 0);
+		bundle.putBoolean("bolek", bolek);
 	}
 	
 	@Override

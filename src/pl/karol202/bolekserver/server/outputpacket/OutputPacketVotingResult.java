@@ -23,7 +23,7 @@ public class OutputPacketVotingResult implements OutputPacket
 	{
 		bundle.putInt("upvotes", upvoters.size());
 		bundle.putInt("totalVotes", totalVotes);
-		bundle.putInt("passed", passed ? 1 : 0);
+		bundle.putBoolean("passed", passed);
 		for(int i = 0; i < upvoters.size(); i++) bundle.putString("upvoter" + i, upvoters.get(i));
 	}
 	

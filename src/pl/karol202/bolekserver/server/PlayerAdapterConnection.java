@@ -288,4 +288,26 @@ public class PlayerAdapterConnection implements PlayerAdapter
 		OutputPacketPresidentLustrated packet = new OutputPacketPresidentLustrated(player.getName(), bolek);
 		connection.sendPacket(packet);
 	}
+	
+	@Override
+	public void sendGameExitedMessage()
+	{
+		OutputPacketGameExited packet = new OutputPacketGameExited();
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPlayersUpdatedMessage(Stream<Player> player)
+	{
+		OutputPacketPlayersUpdated packet = new OutputPacketPlayersUpdated();
+		player.forEach(p -> packet.addPlayer(p.getName()));
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendTooFewPlayersMessage()
+	{
+		OutputPacketTooFewPlayers packet = new OutputPacketTooFewPlayers();
+		connection.sendPacket(packet);
+	}
 }
