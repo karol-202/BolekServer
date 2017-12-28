@@ -103,6 +103,7 @@ public class Game
 		broadcastGameStart();
 		assignRoles();
 		assignPresidentPosition(getRandomPlayer());
+		refillIncomingActsStack();
 		letPresidentChoosePrimeMinister();
 	}
 	

@@ -66,7 +66,7 @@ public class OutputPacketEncoder
 		Element element = document.createElement(packet.getName());
 		bundle.getStringEntriesStream().forEach(e -> element.setAttribute("s." + e.getKey(), e.getValue()));
 		bundle.getIntEntriesStream().forEach(e -> element.setAttribute("i." + e.getKey(), String.valueOf(e.getValue())));
-		bundle.getFloatEntriesStream().forEach(e -> element.setAttribute("f." + e.getKey(), String.valueOf(e.getValue())));
+		bundle.getBooleanEntriesStream().forEach(e -> element.setAttribute("b." + e.getKey(), String.valueOf(e.getValue())));
 		return element;
 	}
 }

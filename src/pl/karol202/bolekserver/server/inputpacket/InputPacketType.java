@@ -8,7 +8,6 @@ enum InputPacketType
 	CREATESERVER(InputPacketCreateServer::new),
 	LOGIN(InputPacketLogin::new),
 	LOGOUT(InputPacketLogout::new),
-	GETUSERS(InputPacketGetUsers::new),
 	READY(InputPacketReady::new),
 	SETPRIMEMINISTER(InputPacketSetPrimeMinister::new),
 	PRIMEMINISTERVOTE(InputPacketPrimeMinisterVote::new),

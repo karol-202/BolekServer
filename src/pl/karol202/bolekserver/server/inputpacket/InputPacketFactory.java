@@ -73,7 +73,7 @@ public class InputPacketFactory
 			{
 			case 's': bundle.putString(name, attr.getValue()); break;
 			case 'i': bundle.putInt(name, Integer.parseInt(attr.getValue())); break;
-			case 'f': bundle.putFloat(name, Float.parseFloat(attr.getValue())); break;
+			case 'b': bundle.putBoolean(name, Boolean.parseBoolean(attr.getValue())); break;
 			default: return null;
 			}
 		}

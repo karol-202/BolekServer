@@ -42,12 +42,12 @@ public class GameServer
 			return null;
 		}
 		
-		broadcastUsersUpdate();
 		if(!shouldExist) shouldExist = true;
 		
 		User user = new User(username, connection);
 		users.add(user);
 		
+		broadcastUsersUpdate();
 		sendServerStatus(user);
 		return user;
 	}
@@ -60,11 +60,6 @@ public class GameServer
 		
 		users.remove(user);
 		return true;
-	}
-	
-	void sendUsersListToUser(User user)
-	{
-		if(user != null) user.getAdapter().sendUsersListMessage(users.stream());
 	}
 	
 	void setUserReady(User user)
