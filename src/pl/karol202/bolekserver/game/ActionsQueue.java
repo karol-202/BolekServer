@@ -7,12 +7,14 @@ public class ActionsQueue<A extends Action>
 	private class ActionAndResult
 	{
 		private A action;
+		private boolean removeImmediately;
 		private Object result;
 		private boolean processed;
 		
-		ActionAndResult(A action)
+		ActionAndResult(A action, boolean removeImmediately)
 		{
 			this.action = action;
+			this.removeImmediately = removeImmediately;
 		}
 		
 		Object getResult()
@@ -39,9 +41,9 @@ public class ActionsQueue<A extends Action>
 		queue = new ConcurrentLinkedQueue<>();
 	}
 	
-	public void addAction(A action)
+	public void addAction(A action, boolean removeImmediately)
 	{
-		queue.add(new ActionAndResult(action));
+		queue.add(new ActionAndResult(action, removeImmediately));
 	}
 	
 	public void removeAction(A action)
@@ -54,7 +56,10 @@ public class ActionsQueue<A extends Action>
 	
 	public A peekAction()
 	{
-		return queue.peek().action;
+		ActionAndResult action = queue.peek();
+		queue.remove(action);
+		if(!action.removeImmediately) queue.add(action);
+		return action.action;
 	}
 	
 	public boolean hasUnprocessedActions()

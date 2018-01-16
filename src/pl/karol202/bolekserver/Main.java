@@ -20,7 +20,9 @@ public class Main
 	
 	private void runGameManagerThread()
 	{
-		new Thread(() -> gameServersManager.run()).start();
+		Thread thread = new Thread(() -> gameServersManager.run());
+		thread.setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+		thread.start();
 	}
 	
 	public static void main(String[] args)

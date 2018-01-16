@@ -1,9 +1,11 @@
 package pl.karol202.bolekserver.server;
 
 import pl.karol202.bolekserver.game.game.Game;
+import pl.karol202.bolekserver.game.game.GameActionExitGame;
 import pl.karol202.bolekserver.game.game.Player;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.game.server.GameServer;
+import pl.karol202.bolekserver.game.server.ServerActionRemoveUser;
 import pl.karol202.bolekserver.game.server.User;
 import pl.karol202.bolekserver.server.inputpacket.*;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacket;
@@ -111,9 +113,10 @@ public class Connection
 	
 	public void sendPacket(OutputPacket packet)
 	{
+		if(!isConnected()) return;
 		try
 		{
-			Server.LOGGER.info("Sending packet: " + packet);
+			Server.LOGGER.info("Sending packet: " + packet.toString());
 			writePacket(packet);
 		}
 		catch(IOException e)
@@ -132,6 +135,8 @@ public class Connection
 	
 	private void closeSocket()
 	{
+		tryToExitGame();
+		tryToLogout();
 		if(!isConnected()) return;
 		try
 		{
@@ -144,9 +149,31 @@ public class Connection
 		}
 	}
 	
+	public void tryToExitGame()
+	{
+		if(game != null && player != null) game.addActionAndReturnImmediately(new GameActionExitGame(player));
+		game = null;
+		player = null;
+	}
+	
+	private void tryToLogout()
+	{
+		if(gameServer != null && user != null) gameServer.addActionAndReturnImmediately(new ServerActionRemoveUser(user));
+	}
+	
 	private boolean isConnected()
 	{
 		return socket.isConnected() && !socket.isClosed();
+	}
+	
+	public boolean isGameServerSet()
+	{
+		return gameServer != null;
+	}
+	
+	public boolean isGameSet()
+	{
+		return game != null;
 	}
 	
 	public void setGameServer(GameServer gameServer)

@@ -5,7 +5,6 @@ import pl.karol202.bolekserver.game.manager.GameServersManager;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Handler;
 import java.util.logging.Logger;
 
 public class Server
@@ -27,9 +26,7 @@ public class Server
 	
 	public static void configureLogger()
 	{
-		Handler[] handlers = new Handler[LOGGER.getHandlers().length];
-		System.arraycopy(LOGGER.getHandlers(), 0, handlers, 0, handlers.length);
-		for(Handler handler : handlers) LOGGER.removeHandler(handler);
+		LOGGER.setUseParentHandlers(false);
 		LOGGER.addHandler(new LoggerHandler());
 	}
 	

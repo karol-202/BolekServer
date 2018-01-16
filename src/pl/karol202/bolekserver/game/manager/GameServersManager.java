@@ -1,6 +1,7 @@
 package pl.karol202.bolekserver.game.manager;
 
 import pl.karol202.bolekserver.game.ActionsQueue;
+import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.server.GameServer;
 
 import java.util.ArrayList;
@@ -10,6 +11,12 @@ import java.util.stream.Collectors;
 
 public class GameServersManager
 {
+	public enum ServerCreationError
+	{
+		INVALID_NAME, TOO_MANY_SERVERS
+	}
+	
+	private static final int MAX_SERVER_NAME_LENGTH = 20;
 	private static final int MAX_SERVERS = 10;
 	
 	private List<GameServer> servers;
@@ -25,9 +32,18 @@ public class GameServersManager
 		this.suspend = false;
 	}
 	
-	GameServer createNewGameServer(String name)
+	GameServer createNewGameServer(String name, ErrorReference<ServerCreationError> error)
 	{
-		if(name == null || servers.size() >= MAX_SERVERS) return null;
+		if(name == null || name.isEmpty() || name.length() > MAX_SERVER_NAME_LENGTH)
+		{
+			error.setError(ServerCreationError.INVALID_NAME);
+			return null;
+		}
+		if(servers.size() >= MAX_SERVERS)
+		{
+			error.setError(ServerCreationError.TOO_MANY_SERVERS);
+			return null;
+		}
 		GameServer server = new GameServer(name, getUniqueServerCode());
 		servers.add(server);
 		return server;
@@ -86,7 +102,7 @@ public class GameServersManager
 	public <R> R addActionAndWaitForResult(ConnectionAction<R> action)
 	{
 		if(action == null) return null;
-		actionsQueue.addAction(action);
+		actionsQueue.addAction(action, false);
 		
 		do Thread.yield();
 		while(!actionsQueue.isResultSetForAction(action));

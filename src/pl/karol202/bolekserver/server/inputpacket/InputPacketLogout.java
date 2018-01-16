@@ -16,9 +16,17 @@ public class InputPacketLogout implements InputServerPacket
 	@Override
 	public void execute(Connection connection, GameServer server)
 	{
+		connection.tryToExitGame();
 		boolean result = connection.getUser() != null &&
 						 server.addActionAndWaitForResult(new ServerActionRemoveUser(connection.getUser()));
 		if(result) connection.sendPacket(new OutputPacketLoggedOut());
-		else connection.sendPacket(new OutputPacketFailure());
+		else
+		{
+			connection.sendPacket(new OutputPacketFailure());
+			return;
+		}
+		
+		connection.setGameServer(null);
+		connection.setUser(null);
 	}
 }

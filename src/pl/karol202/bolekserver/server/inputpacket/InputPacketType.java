@@ -9,6 +9,7 @@ enum InputPacketType
 	LOGIN(InputPacketLogin::new),
 	LOGOUT(InputPacketLogout::new),
 	READY(InputPacketReady::new),
+	MESSAGE(InputPacketMessage::new),
 	SETPRIMEMINISTER(InputPacketSetPrimeMinister::new),
 	PRIMEMINISTERVOTE(InputPacketPrimeMinisterVote::new),
 	DISMISSACTBYPRESIDENT(InputPacketDismissActByPresident::new),

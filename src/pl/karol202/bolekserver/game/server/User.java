@@ -18,19 +18,24 @@ public class User
 		this.ready = false;
 	}
 	
+	void sendLoggedInMessage(String serverName, int serverCode)
+	{
+		adapter.sendLoggedInMessage(serverName, serverCode);
+	}
+	
 	void sendUsersListMessage(Stream<User> users)
 	{
 		adapter.sendUsersListMessage(users);
 	}
 	
-	void sendUserReadinessMessage(String username)
-	{
-		adapter.sendUserReadinessMessage(username);
-	}
-	
 	void sendServerStatus(boolean gameAvailable)
 	{
 		adapter.sendServerStatusMessage(gameAvailable);
+	}
+	
+	void sendMessage(User sender, String message)
+	{
+		adapter.sendMessage(sender, message);
 	}
 	
 	public String getName()
@@ -43,7 +48,7 @@ public class User
 		return adapter;
 	}
 	
-	boolean isReady()
+	public boolean isReady()
 	{
 		return ready;
 	}

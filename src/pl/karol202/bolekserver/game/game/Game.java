@@ -505,7 +505,7 @@ public class Game
 	
 	void exitGame(Player player)
 	{
-		if(player == null) return;
+		if(player == null || !players.contains(player)) return;
 		removePlayer(player);
 		sendGameExitedMessage(player);
 	}
@@ -808,7 +808,7 @@ public class Game
 	public <R> R addActionAndWaitForResult(GameAction<R> action)
 	{
 		if(action == null) return null;
-		actionsQueue.addAction(action);
+		actionsQueue.addAction(action, false);
 		
 		do Thread.yield();
 		while(!actionsQueue.isResultSetForAction(action));
@@ -820,10 +820,9 @@ public class Game
 	
 	public void addActionAndReturnImmediately(GameAction action)
 	{
-		if(action != null) actionsQueue.addAction(action);
+		if(action != null) actionsQueue.addAction(action, true);
 	}
 	
-	//TDOD Użyć tej metody
 	public void setOnGameEndListener(OnGameEndListener onGameEndListener)
 	{
 		this.onGameEndListener = onGameEndListener;

@@ -10,6 +10,6 @@ public class OutputPacketLoggedOut implements OutputPacket
 	@Override
 	public String getName()
 	{
-		return "LOGGEDIN";
+		return "LOGGEDOUT";
 	}
 }

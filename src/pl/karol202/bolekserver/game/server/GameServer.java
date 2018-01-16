@@ -1,6 +1,7 @@
 package pl.karol202.bolekserver.game.server;
 
 import pl.karol202.bolekserver.game.ActionsQueue;
+import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.game.GameActionStartGame;
 import pl.karol202.bolekserver.game.game.Player;
@@ -12,7 +13,13 @@ import java.util.stream.Collectors;
 
 public class GameServer
 {
-	private static final int MIN_USERS = 5;
+	public enum UserAddingError
+	{
+		INVALID_NAME, TOO_MANY_USERS, USERNAME_BUSY
+	}
+	
+	private static final int MAX_USERNAME_LENGTH = 20;
+	private static final int MIN_USERS = 2;
 	private static final int MAX_USERS = 10;
 	
 	private String name;
@@ -33,12 +40,21 @@ public class GameServer
 		this.actionsQueue = new ActionsQueue<>();
 	}
 	
-	User addNewUser(String username, Connection connection)
+	User addNewUser(String username, Connection connection, ErrorReference<UserAddingError> error)
 	{
-		if(username == null || username.isEmpty() || connection == null ||
-				users.size() >= MAX_USERS || isUsernameUsed(username))
+		if(username == null || username.isEmpty() || username.length() > MAX_USERNAME_LENGTH)
 		{
-			shouldExist = false;
+			error.setError(UserAddingError.INVALID_NAME);
+			return null;
+		}
+		if(users.size() >= MAX_USERS)
+		{
+			error.setError(UserAddingError.TOO_MANY_USERS);
+			return null;
+		}
+		if(isUsernameUsed(username))
+		{
+			error.setError(UserAddingError.USERNAME_BUSY);
 			return null;
 		}
 		
@@ -47,6 +63,7 @@ public class GameServer
 		User user = new User(username, connection);
 		users.add(user);
 		
+		sendLoggedInMessage(user);
 		broadcastUsersUpdate();
 		sendServerStatus(user);
 		return user;
@@ -55,10 +72,10 @@ public class GameServer
 	boolean removeUser(User user)
 	{
 		if(!users.contains(user)) return false;
+		users.remove(user);
+		
 		broadcastUsersUpdate();
 		if(users.isEmpty()) shouldExist = false;
-		
-		users.remove(user);
 		return true;
 	}
 	
@@ -66,7 +83,7 @@ public class GameServer
 	{
 		if(!users.contains(user)) return;
 		user.setReady(true);
-		broadcastUserReadiness(user.getName());
+		broadcastUsersUpdate();
 		checkForReadiness();
 	}
 
@@ -92,20 +109,26 @@ public class GameServer
 		broadcastServerStatus();
 	}
 	
+	void sendMessage(User sender, String message)
+	{
+		if(!users.contains(sender)) return;
+		broadcastMessage(sender, message);
+	}
+	
 	
 	private boolean isUsernameUsed(String username)
 	{
 		return users.stream().anyMatch(u -> u.getName().equals(username));
 	}
 	
+	private void sendLoggedInMessage(User user)
+	{
+		user.sendLoggedInMessage(name, serverCode);
+	}
+	
 	private void broadcastUsersUpdate()
 	{
 		users.forEach(u -> u.sendUsersListMessage(users.stream()));
-	}
-	
-	private void broadcastUserReadiness(String username)
-	{
-		users.forEach(u -> u.sendUserReadinessMessage(username));
 	}
 	
 	private void broadcastServerStatus()
@@ -116,6 +139,11 @@ public class GameServer
 	private void sendServerStatus(User user)
 	{
 		user.sendServerStatus(game == null);
+	}
+	
+	private void broadcastMessage(User sender, String message)
+	{
+		users.stream().filter(u -> u != sender).forEach(u -> u.sendMessage(sender, message));
 	}
 	
 	public void executeActions()
@@ -132,7 +160,7 @@ public class GameServer
 	public <R> R addActionAndWaitForResult(ServerAction<R> action)
 	{
 		if(action == null) return null;
-		actionsQueue.addAction(action);
+		actionsQueue.addAction(action, false);
 		
 		do Thread.yield();
 		while(!actionsQueue.isResultSetForAction(action));
@@ -140,6 +168,11 @@ public class GameServer
 		Object result = actionsQueue.getResult(action);
 		actionsQueue.removeAction(action);
 		return (R) result;
+	}
+	
+	public void addActionAndReturnImmediately(ServerAction action)
+	{
+		if(action != null) actionsQueue.addAction(action, true);
 	}
 	
 	public String getName()

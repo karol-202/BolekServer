@@ -4,9 +4,11 @@ import java.util.stream.Stream;
 
 public interface UserAdapter
 {
+	void sendLoggedInMessage(String serverName, int serverCode);
+	
 	void sendUsersListMessage(Stream<User> users);
 	
-	void sendUserReadinessMessage(String username);
-	
 	void sendServerStatusMessage(boolean gameAvailable);
+	
+	void sendMessage(User sender, String message);
 }
