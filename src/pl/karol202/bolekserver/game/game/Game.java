@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class Game
 {
-	private static final int MIN_PLAYERS = 3;
+	private static final int MIN_PLAYERS = 2;
 	
 	private List<Player> players;
 	private boolean gameEnd;
@@ -46,7 +46,7 @@ public class Game
 	private boolean lustratingByPresident;
 	
 	private ActionsQueue<GameAction> actionsQueue;
-	private OnGameEndListener onGameEndListener;
+	private GameListener gameListener;
 	
 	public Game(List<Player> players)
 	{
@@ -65,6 +65,7 @@ public class Game
 		else if(player == nextPresident) nextPresident = getNextPlayer(nextPresident);
 		players.remove(player);
 		sendPlayersUpdatedMessage();
+		gameListener.onPlayerLeaveGame(player);
 		if(players.size() < MIN_PLAYERS) tooFewPlayers();
 	}
 	
@@ -101,6 +102,7 @@ public class Game
 	void startGame()
 	{
 		broadcastGameStart();
+		sendPlayersUpdatedMessage();
 		assignRoles();
 		assignPresidentPosition(getRandomPlayer());
 		refillIncomingActsStack();
@@ -163,6 +165,7 @@ public class Game
 	
 	private void endPrimeMinisterTerm()
 	{
+		if(primeMinister == null) return;
 		this.previousPrimeMinister = primeMinister;
 		primeMinister = null;
 		broadcastPrimeMinisterAssignment();
@@ -397,7 +400,7 @@ public class Game
 	private void gameEnd()
 	{
 		gameEnd = true;
-		if(onGameEndListener != null) onGameEndListener.onGameEnd();
+		if(gameListener != null) gameListener.onGameEnd();
 	}
 	
 	private void antilustrationActPassed()
@@ -823,8 +826,8 @@ public class Game
 		if(action != null) actionsQueue.addAction(action, true);
 	}
 	
-	public void setOnGameEndListener(OnGameEndListener onGameEndListener)
+	public void setGameListener(GameListener gameListener)
 	{
-		this.onGameEndListener = onGameEndListener;
+		this.gameListener = gameListener;
 	}
 }

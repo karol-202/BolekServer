@@ -64,12 +64,7 @@ public class Server
 			LOGGER.info("Connected to client");
 			Connection connection = new Connection(gameServersManager);
 			if(!connection.connect(socket)) continue;
-			createConnectionThread(connection);
+			connection.run();
 		}
-	}
-	
-	private void createConnectionThread(Connection connection)
-	{
-		new Thread(connection::run).start();
 	}
 }

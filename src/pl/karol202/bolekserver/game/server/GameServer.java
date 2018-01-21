@@ -4,6 +4,7 @@ import pl.karol202.bolekserver.game.ActionsQueue;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.game.GameActionStartGame;
+import pl.karol202.bolekserver.game.game.GameListener;
 import pl.karol202.bolekserver.game.game.Player;
 import pl.karol202.bolekserver.server.Connection;
 
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GameServer
+public class GameServer implements GameListener
 {
 	public enum UserAddingError
 	{
@@ -27,6 +28,7 @@ public class GameServer
 	private List<User> users;
 	private Game game;
 	private boolean shouldExist;
+	private List<Message> messages;
 	
 	private ActionsQueue<ServerAction> actionsQueue;
 	
@@ -36,6 +38,7 @@ public class GameServer
 		this.serverCode = serverCode;
 		this.users = new ArrayList<>();
 		this.shouldExist = true;
+		this.messages = new ArrayList<>();
 		
 		this.actionsQueue = new ActionsQueue<>();
 	}
@@ -66,6 +69,7 @@ public class GameServer
 		sendLoggedInMessage(user);
 		broadcastUsersUpdate();
 		sendServerStatus(user);
+		sendAllMessages(user);
 		return user;
 	}
 	
@@ -99,19 +103,29 @@ public class GameServer
 		users.forEach(u -> u.setReady(false));
 		List<Player> players = users.stream().map(u -> new Player(u, u.getAdapter())).collect(Collectors.toList());
 		game = new Game(players);
-		game.setOnGameEndListener(this::onGameEnded);
+		game.setGameListener(this);
 		game.addActionAndReturnImmediately(new GameActionStartGame());
 	}
 	
-	private void onGameEnded()
+	@Override
+	public void onGameEnd()
 	{
 		game = null;
+		broadcastUsersUpdate();
 		broadcastServerStatus();
+	}
+	
+	@Override
+	public void onPlayerLeaveGame(Player player)
+	{
+		sendUsersUpdate(player.getUser());
+		sendServerStatus(player.getUser());
 	}
 	
 	void sendMessage(User sender, String message)
 	{
 		if(!users.contains(sender)) return;
+		messages.add(new Message(sender, message));
 		broadcastMessage(sender, message);
 	}
 	
@@ -128,7 +142,12 @@ public class GameServer
 	
 	private void broadcastUsersUpdate()
 	{
-		users.forEach(u -> u.sendUsersListMessage(users.stream()));
+		users.forEach(this::sendUsersUpdate);
+	}
+	
+	private void sendUsersUpdate(User user)
+	{
+		user.sendUsersListMessage(users.stream());
 	}
 	
 	private void broadcastServerStatus()
@@ -144,6 +163,11 @@ public class GameServer
 	private void broadcastMessage(User sender, String message)
 	{
 		users.stream().filter(u -> u != sender).forEach(u -> u.sendMessage(sender, message));
+	}
+	
+	private void sendAllMessages(User user)
+	{
+		messages.forEach(m -> user.sendMessage(m.getSender(), m.getMessage()));
 	}
 	
 	public void executeActions()

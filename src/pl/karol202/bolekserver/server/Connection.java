@@ -10,6 +10,7 @@ import pl.karol202.bolekserver.game.server.User;
 import pl.karol202.bolekserver.server.inputpacket.*;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacket;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacketEncoder;
+import pl.karol202.bolekserver.server.outputpacket.OutputPacketPing;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,11 +19,15 @@ import java.net.Socket;
 
 public class Connection
 {
+	private static final boolean PING_ENABLE = true;
+	private static final int MAX_UNANSWERED_PINGS = 3; //Max 3000ms latency
+	
 	private GameServersManager gameServersManager;
 	private GameServer gameServer;
 	private Game game;
 	private User user;
 	private Player player;
+	private int unansweredPings;
 	
 	private Socket socket;
 	private InputStream inputStream;
@@ -61,7 +66,9 @@ public class Connection
 	
 	void run()
 	{
-		if(isConnected()) tryToListen();
+		if(!isConnected()) return;
+		new Thread(this::tryToListen).start();
+		if(PING_ENABLE) new Thread(this::tryToStartConnectionChecking).start();
 	}
 	
 	private void tryToListen()
@@ -97,13 +104,16 @@ public class Connection
 		if(bytesRead != length) return null;
 		
 		InputPacket packet = InputPacketFactory.createPacket(bytes);
-		Server.LOGGER.info("Packet received: " + (packet != null ? packet.toString() : "corrupted"));
+		if(packet == null) Server.LOGGER.info("Packet received: corrupted");
+		else if(!packet.isSilent()) Server.LOGGER.info("Packet received: " + packet.toString());
 		return packet;
 	}
 	
 	private void executePacket(InputPacket packet)
 	{
-		if(packet instanceof InputControlPacket && gameServersManager != null)
+		if(packet instanceof InputPacketPong)
+			unansweredPings = 0;
+		else if(packet instanceof InputControlPacket && gameServersManager != null)
 			((InputControlPacket) packet).execute(this, gameServersManager);
 		else if(packet instanceof InputServerPacket && gameServer != null)
 			((InputServerPacket) packet).execute(this, gameServer);
@@ -125,7 +135,7 @@ public class Connection
 		}
 	}
 	
-	private void writePacket(OutputPacket packet) throws IOException
+	private synchronized void writePacket(OutputPacket packet) throws IOException
 	{
 		byte[] bytes = OutputPacketEncoder.encodePacket(packet);
 		if(bytes == null || bytes.length == 0 || !isConnected()) return;
@@ -159,6 +169,29 @@ public class Connection
 	private void tryToLogout()
 	{
 		if(gameServer != null && user != null) gameServer.addActionAndReturnImmediately(new ServerActionRemoveUser(user));
+	}
+	
+	private void tryToStartConnectionChecking()
+	{
+		try
+		{
+			startConnectionChecking();
+		}
+		catch(Exception e)
+		{
+			exception("Exception on connection checking.", e);
+		}
+	}
+	
+	private void startConnectionChecking() throws InterruptedException, IOException
+	{
+		while(isConnected())
+		{
+			Thread.sleep(1000);
+			writePacket(new OutputPacketPing());
+			unansweredPings++;
+			if(unansweredPings > MAX_UNANSWERED_PINGS) closeSocket();
+		}
 	}
 	
 	private boolean isConnected()

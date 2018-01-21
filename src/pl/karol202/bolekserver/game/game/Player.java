@@ -231,6 +231,11 @@ public class Player
 		adapter.resetGameAndPlayer();
 	}
 	
+	public User getUser()
+	{
+		return user;
+	}
+	
 	public String getName()
 	{
 		return user.getName();

@@ -13,7 +13,15 @@ enum InputPacketType
 	SETPRIMEMINISTER(InputPacketSetPrimeMinister::new),
 	PRIMEMINISTERVOTE(InputPacketPrimeMinisterVote::new),
 	DISMISSACTBYPRESIDENT(InputPacketDismissActByPresident::new),
-	DISMISSACTBYPRIMEMINISTER(InputPacketDismissActByPrimeMinister::new);
+	DISMISSACTBYPRIMEMINISTER(InputPacketDismissActByPrimeMinister::new),
+	VETOREQUEST(InputPacketVetoRequest::new),
+	VETORESPONSE(InputPacketVetoResponse::new),
+	CHECKPLAYERPRESIDENT(InputPacketCheckPlayerPresident::new),
+	CHOOSEPLAYERORACTSCHECKINGPRESIDENT(InputPacketChoosePlayerOrActsCheckingPresident::new),
+	CHOOSEPRESIDENT(InputPacketChoosePresident::new),
+	LUSTRATEPRESIDENT(InputPacketLustratePresident::new),
+	EXITGAME(InputPacketExitGame::new),
+	PONG(InputPacketPong::new);
 	
 	private Supplier<InputPacket> packetSupplier;
 	
