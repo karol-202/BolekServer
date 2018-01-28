@@ -20,7 +20,7 @@ public class OutputPacketCollaboratorsRevealment implements OutputPacket
 	public void saveData(DataBundle bundle)
 	{
 		bundle.putInt("collaborators", collaborators.size());
-		for(int i = 0; i < collaborators.size(); i++) bundle.putString("collborator" + i, collaborators.get(i));
+		for(int i = 0; i < collaborators.size(); i++) bundle.putString("collaborator" + i, collaborators.get(i));
 		bundle.putString("bolek", bolek);
 	}
 	

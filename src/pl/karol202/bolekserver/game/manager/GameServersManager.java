@@ -3,6 +3,7 @@ package pl.karol202.bolekserver.game.manager;
 import pl.karol202.bolekserver.game.ActionsQueue;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.server.GameServer;
+import pl.karol202.bolekserver.server.Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,8 @@ public class GameServersManager
 		}
 		GameServer server = new GameServer(name, getUniqueServerCode());
 		servers.add(server);
+		
+		Server.LOGGER.info("Created new server: " + name + ", " + server.getServerCode());
 		return server;
 	}
 	
@@ -85,7 +88,8 @@ public class GameServersManager
 	{
 		while(actionsQueue.hasUnprocessedActions())
 		{
-			ConnectionAction action = actionsQueue.peekAction();
+			ConnectionAction action = actionsQueue.peekActionIfUnprocessed();
+			if(action == null) continue;
 			Object result = action.execute(this);
 			actionsQueue.setResult(action, result);
 		}
@@ -99,6 +103,7 @@ public class GameServersManager
 		suspend = true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <R> R addActionAndWaitForResult(ConnectionAction<R> action)
 	{
 		if(action == null) return null;

@@ -20,7 +20,7 @@ import java.net.Socket;
 public class Connection
 {
 	private static final boolean PING_ENABLE = true;
-	private static final int MAX_UNANSWERED_PINGS = 3; //Max 3000ms latency
+	private static final int MAX_UNANSWERED_PINGS = 10;
 	
 	private GameServersManager gameServersManager;
 	private GameServer gameServer;
@@ -85,7 +85,7 @@ public class Connection
 	
 	private void listen() throws IOException
 	{
-		Server.LOGGER.info("Listening...");
+		Server.LOGGER.fine("Listening...");
 		while(isConnected())
 		{
 			InputPacket packet = receivePacket();
@@ -104,8 +104,8 @@ public class Connection
 		if(bytesRead != length) return null;
 		
 		InputPacket packet = InputPacketFactory.createPacket(bytes);
-		if(packet == null) Server.LOGGER.info("Packet received: corrupted");
-		else if(!packet.isSilent()) Server.LOGGER.info("Packet received: " + packet.toString());
+		if(packet == null) Server.LOGGER.warning("Packet received: corrupted");
+		else if(!packet.isSilent()) Server.LOGGER.fine("Packet received: " + packet.toString());
 		return packet;
 	}
 	
@@ -126,7 +126,7 @@ public class Connection
 		if(!isConnected()) return;
 		try
 		{
-			Server.LOGGER.info("Sending packet: " + packet.toString());
+			Server.LOGGER.fine("Sending packet: " + packet.toString());
 			writePacket(packet);
 		}
 		catch(IOException e)

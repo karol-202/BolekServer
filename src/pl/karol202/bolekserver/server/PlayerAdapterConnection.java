@@ -66,9 +66,9 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendPrimeMinisterChooseRequest(Stream<Player> candidates)
+	public void sendPrimeMinisterChooseRequest(boolean update, Stream<Player> candidates)
 	{
-		OutputPacketChoosePrimeMinister packet = new OutputPacketChoosePrimeMinister();
+		OutputPacketChoosePrimeMinister packet = new OutputPacketChoosePrimeMinister(update);
 		candidates.forEach(p -> packet.addCandidate(p.getName()));
 		connection.sendPacket(packet);
 	}
@@ -197,9 +197,9 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendPlayerCheckRequestToPresident(Stream<Player> checkablePlayers)
+	public void sendPlayerCheckRequestToPresident(boolean update, Stream<Player> checkablePlayers)
 	{
-		OutputPacketCheckPlayerPresident packet = new OutputPacketCheckPlayerPresident();
+		OutputPacketCheckPlayerPresident packet = new OutputPacketCheckPlayerPresident(update);
 		checkablePlayers.forEach(p -> packet.addCheckablePlayer(p.getName()));
 		connection.sendPacket(packet);
 	}

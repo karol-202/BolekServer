@@ -54,11 +54,12 @@ public class ActionsQueue<A extends Action>
 		if(aar != null) queue.remove(aar);
 	}
 	
-	public A peekAction()
+	public A peekActionIfUnprocessed()
 	{
 		ActionAndResult action = queue.peek();
 		queue.remove(action);
 		if(!action.removeImmediately) queue.add(action);
+		if(action.isProcessed()) return null;
 		return action.action;
 	}
 	

@@ -10,6 +10,11 @@ import java.util.stream.Stream;
 
 public class Game
 {
+	public enum UserChoosingError
+	{
+		OK, INVALID_USER, ERROR
+	}
+	
 	private static final int MIN_PLAYERS = 2;
 	
 	private List<Player> players;
@@ -64,6 +69,8 @@ public class Game
 		else if(player == previousPrimeMinister) previousPrimeMinister = null;
 		else if(player == nextPresident) nextPresident = getNextPlayer(nextPresident);
 		players.remove(player);
+		if(choosingPrimeMinister) sendPrimeMinisterChooseRequest(true);
+		else if(checkingPlayerByPresident) sendPlayerCheckRequestToPresident(true);
 		sendPlayersUpdatedMessage();
 		gameListener.onPlayerLeaveGame(player);
 		if(players.size() < MIN_PLAYERS) tooFewPlayers();
@@ -174,7 +181,7 @@ public class Game
 	private void letPresidentChoosePrimeMinister()
 	{
 		choosingPrimeMinister = true;
-		sendPrimeMinisterChooseRequest();
+		sendPrimeMinisterChooseRequest(false);
 	}
 	
 	private boolean canPlayerBePrimeMinister(Player player)
@@ -182,11 +189,11 @@ public class Game
 		return player != president && player != previousPresident && player != previousPrimeMinister;
 	}
 	
-	boolean choosePrimeMinister(Player sender, String name)
+	UserChoosingError choosePrimeMinister(Player sender, String name)
 	{
-		if(!choosingPrimeMinister || sender != president) return false;
+		if(!choosingPrimeMinister || sender != president) return UserChoosingError.ERROR;
 		Player player = getPlayerByName(name);
-		if(player == null || !canPlayerBePrimeMinister(player)) return false;
+		if(player == null || !canPlayerBePrimeMinister(player)) return UserChoosingError.INVALID_USER;
 		
 		choosingPrimeMinister = false;
 		votingOnPrimeMinister = true;
@@ -195,12 +202,12 @@ public class Game
 		
 		broadcastPrimeMinisterChosen(player);
 		broadcastPrimeMinisterVotingRequest();
-		return true;
+		return UserChoosingError.OK;
 	}
 	
 	boolean voteOnPrimeMinister(Player sender, boolean vote)
 	{
-		if(!votingOnPrimeMinister) return false;
+		if(!votingOnPrimeMinister || votes.containsKey(sender)) return false;
 		votes.put(sender, vote);
 		checkIfVotingIsEnded();
 		return true;
@@ -215,8 +222,8 @@ public class Game
 	private void countVotes()
 	{
 		int upvotes = (int) votes.values().stream().filter(b -> b).count();
-		int requiredVotes = (int) Math.ceil(votes.size() / 2f);
-		boolean passed = upvotes >= requiredVotes;
+		float requiredVotes = votes.size() / 2f;
+		boolean passed = upvotes > requiredVotes;
 		
 		broadcastVotingResult(passed);
 		if(passed) primeMinisterChosen();
@@ -415,14 +422,14 @@ public class Game
 	{
 		checkingPlayerByPresident = true;
 		broadcastPresidentCheckingPlayer();
-		sendPlayerCheckRequestToPresident();
+		sendPlayerCheckRequestToPresident(false);
 	}
 	
-	boolean checkPlayerByPresident(Player sender, String checkedPlayer)
+	UserChoosingError checkPlayerByPresident(Player sender, String checkedPlayer)
 	{
-		if(!checkingPlayerByPresident || sender != president) return false;
+		if(!checkingPlayerByPresident || sender != president) return UserChoosingError.ERROR;
 		Player player = getPlayerByName(checkedPlayer);
-		if(player == null || player.wasChecked()) return false;
+		if(player == null || player.wasChecked()) return UserChoosingError.INVALID_USER;
 		
 		checkingPlayerByPresident = false;
 		player.setChecked();
@@ -430,7 +437,7 @@ public class Game
 		sendPlayerCheckingResultToPresident(player.isCollaborator() || player.isBolek() ? 1 : 0);
 		broadcastPresidentCheckedPlayerMessage(player);
 		addActionAndReturnImmediately(new GameActionNextTurn());
-		return true;
+		return UserChoosingError.OK;
 	}
 	
 	private void letPresidentCheckPlayerOrActs()
@@ -465,11 +472,11 @@ public class Game
 		sendChoosePresidentRequestToPresident();
 	}
 	
-	boolean choosePresident(Player sender, String president)
+	UserChoosingError choosePresident(Player sender, String president)
 	{
-		if(!choosingPresident || sender != this.president) return false;
+		if(!choosingPresident || sender != this.president) return UserChoosingError.ERROR;
 		Player player = getPlayerByName(president);
-		if(player == null) return false;
+		if(player == null) return UserChoosingError.INVALID_USER;
 		
 		choosingPresident = false;
 		
@@ -479,7 +486,7 @@ public class Game
 		assignPresidentPosition(player);
 		
 		addActionAndReturnImmediately(new GameActionNextTurn());
-		return true;
+		return UserChoosingError.OK;
 	}
 	
 	private void letPresidentLustratePlayer()
@@ -489,11 +496,11 @@ public class Game
 		sendLustrationRequestToPresident();
 	}
 	
-	boolean lustrateByPresident(Player sender, String playerName)
+	UserChoosingError lustrateByPresident(Player sender, String playerName)
 	{
-		if(!lustratingByPresident || sender != president) return false;
+		if(!lustratingByPresident || sender != president) return UserChoosingError.ERROR;
 		Player player = getPlayerByName(playerName);
-		if(player == null || player == president) return false;
+		if(player == null || player == president) return UserChoosingError.INVALID_USER;
 		
 		lustratingByPresident = false;
 		sendYouAreLustratedMessage(player);
@@ -503,7 +510,7 @@ public class Game
 		broadcastPresidentLustratedMessage(player);
 		if(player.isBolek()) ministersWin(WinCause.BOLEK);
 		else addActionAndReturnImmediately(new GameActionNextTurn());
-		return true;
+		return UserChoosingError.OK;
 	}
 	
 	void exitGame(Player player)
@@ -615,10 +622,10 @@ public class Game
 		players.forEach(p -> p.sendPresidentAssignmentMessage(president));
 	}
 	
-	private void sendPrimeMinisterChooseRequest()
+	private void sendPrimeMinisterChooseRequest(boolean update)
 	{
 		Stream<Player> candidates = players.stream().filter(this::canPlayerBePrimeMinister);
-		president.sendPrimeMinisterChooseRequest(candidates);
+		president.sendPrimeMinisterChooseRequest(update, candidates);
 	}
 	
 	private void broadcastPrimeMinisterChosen(Player primeMinister)
@@ -716,10 +723,10 @@ public class Game
 		players.forEach(Player::sendPresidentCheckingPlayerMessage);
 	}
 	
-	private void sendPlayerCheckRequestToPresident()
+	private void sendPlayerCheckRequestToPresident(boolean update)
 	{
 		Stream<Player> checkablePlayers = players.stream().filter(p -> !p.wasChecked());
-		president.sendPlayerCheckRequestToPresident(checkablePlayers);
+		president.sendPlayerCheckRequestToPresident(update, checkablePlayers);
 	}
 	
 	private void sendPlayerCheckingResultToPresident(int result)
@@ -802,12 +809,14 @@ public class Game
 	{
 		while(actionsQueue.hasUnprocessedActions())
 		{
-			GameAction action = actionsQueue.peekAction();
+			GameAction action = actionsQueue.peekActionIfUnprocessed();
+			if(action == null) continue;
 			Object result = action.execute(this);
 			actionsQueue.setResult(action, result);
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <R> R addActionAndWaitForResult(GameAction<R> action)
 	{
 		if(action == null) return null;

@@ -21,7 +21,10 @@ public class InputPacketLustratePresident implements InputGamePacket
 	public void execute(Connection connection, Game game)
 	{
 		Player sender = connection.getPlayer();
-		boolean result = game.addActionAndWaitForResult(new GameActionLustrateByPresident(sender, player));
-		if(!result) connection.sendPacket(new OutputPacketFailure());
+		Game.UserChoosingError result = game.addActionAndWaitForResult(new GameActionLustrateByPresident(sender, player));
+		if(result == Game.UserChoosingError.ERROR)
+			connection.sendPacket(new OutputPacketFailure());
+		else if(result == Game.UserChoosingError.INVALID_USER)
+			connection.sendPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_INVALID_USER));
 	}
 }

@@ -56,9 +56,9 @@ public class Player
 		adapter.sendPresidentAssignmentMessage(player);
 	}
 	
-	void sendPrimeMinisterChooseRequest(Stream<Player> candidates)
+	void sendPrimeMinisterChooseRequest(boolean update, Stream<Player> candidates)
 	{
-		adapter.sendPrimeMinisterChooseRequest(candidates);
+		adapter.sendPrimeMinisterChooseRequest(update, candidates);
 	}
 	
 	void sendPrimeMinisterChosenMessage(Player player)
@@ -146,9 +146,9 @@ public class Player
 		adapter.sendPresidentCheckingPlayerMessage();
 	}
 	
-	void sendPlayerCheckRequestToPresident(Stream<Player> checkablePlayers)
+	void sendPlayerCheckRequestToPresident(boolean update, Stream<Player> checkablePlayers)
 	{
-		adapter.sendPlayerCheckRequestToPresident(checkablePlayers);
+		adapter.sendPlayerCheckRequestToPresident(update, checkablePlayers);
 	}
 	
 	void sendPlayerCheckingResultToPresident(int result)

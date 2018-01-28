@@ -1,6 +1,6 @@
 package pl.karol202.bolekserver.game.game;
 
-public class GameActionChoosePresident implements GameAction<Boolean>
+public class GameActionChoosePresident implements GameAction<Game.UserChoosingError>
 {
 	private Player sender;
 	private String president;
@@ -12,7 +12,7 @@ public class GameActionChoosePresident implements GameAction<Boolean>
 	}
 	
 	@Override
-	public Boolean execute(Game game)
+	public Game.UserChoosingError execute(Game game)
 	{
 		return game.choosePresident(sender, president);
 	}

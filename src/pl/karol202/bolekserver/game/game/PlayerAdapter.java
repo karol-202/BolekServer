@@ -18,7 +18,7 @@ public interface PlayerAdapter
 	
 	void sendPresidentAssignmentMessage(Player president);
 	
-	void sendPrimeMinisterChooseRequest(Stream<Player> candidates);
+	void sendPrimeMinisterChooseRequest(boolean update, Stream<Player> candidates);
 	
 	void sendPrimeMinisterChosenMessage(Player primeMinister);
 	
@@ -54,7 +54,7 @@ public interface PlayerAdapter
 	
 	void sendPresidentCheckingPlayerMessage();
 	
-	void sendPlayerCheckRequestToPresident(Stream<Player> checkablePlayers);
+	void sendPlayerCheckRequestToPresident(boolean update, Stream<Player> checkablePlayers);
 	
 	void sendPlayerCheckingResultToPresident(int result);
 	

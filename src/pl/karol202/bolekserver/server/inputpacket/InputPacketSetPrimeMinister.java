@@ -21,7 +21,10 @@ public class InputPacketSetPrimeMinister implements InputGamePacket
 	public void execute(Connection connection, Game game)
 	{
 		Player sender = connection.getPlayer();
-		boolean result = game.addActionAndWaitForResult(new GameActionChoosePrimeMinister(sender, primeMinister));
-		if(!result) connection.sendPacket(new OutputPacketFailure());
+		Game.UserChoosingError result = game.addActionAndWaitForResult(new GameActionChoosePrimeMinister(sender, primeMinister));
+		if(result == Game.UserChoosingError.ERROR)
+			connection.sendPacket(new OutputPacketFailure());
+		else if(result == Game.UserChoosingError.INVALID_USER)
+			connection.sendPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_INVALID_USER));
 	}
 }

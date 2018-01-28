@@ -5,11 +5,12 @@ import pl.karol202.bolekserver.game.manager.GameServersManager;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Server
 {
-	static final Logger LOGGER = Logger.getLogger("bolek");
+	public static final Logger LOGGER = Logger.getLogger("bolek");
 	
 	private static final int PORT = 6006;
 	
@@ -26,6 +27,7 @@ public class Server
 	
 	public static void configureLogger()
 	{
+		LOGGER.setLevel(Level.FINER);
 		LOGGER.setUseParentHandlers(false);
 		LOGGER.addHandler(new LoggerHandler());
 	}
@@ -57,7 +59,7 @@ public class Server
 	
 	private void waitForClients() throws IOException
 	{
-		LOGGER.info("Waiting for clients...");
+		LOGGER.fine("Waiting for clients...");
 		while(!serverSocket.isClosed())
 		{
 			Socket socket = serverSocket.accept();

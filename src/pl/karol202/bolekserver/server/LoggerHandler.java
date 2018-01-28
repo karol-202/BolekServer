@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.server;
 
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
 
@@ -10,6 +11,7 @@ class LoggerHandler extends StreamHandler
 		super();
 		setOutputStream(System.out);
 		setFormatter(new LoggerFormatter());
+		setLevel(Level.FINEST);
 	}
 	
 	@Override

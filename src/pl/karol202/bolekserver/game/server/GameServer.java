@@ -7,6 +7,7 @@ import pl.karol202.bolekserver.game.game.GameActionStartGame;
 import pl.karol202.bolekserver.game.game.GameListener;
 import pl.karol202.bolekserver.game.game.Player;
 import pl.karol202.bolekserver.server.Connection;
+import pl.karol202.bolekserver.server.Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +71,8 @@ public class GameServer implements GameListener
 		broadcastUsersUpdate();
 		sendServerStatus(user);
 		sendAllMessages(user);
+		
+		Server.LOGGER.info("User " + username + " joined server " + serverCode);
 		return user;
 	}
 	
@@ -80,6 +83,8 @@ public class GameServer implements GameListener
 		
 		broadcastUsersUpdate();
 		if(users.isEmpty()) shouldExist = false;
+		
+		Server.LOGGER.info("User " + user.getName() + " leaved server " + serverCode);
 		return true;
 	}
 	
@@ -105,6 +110,8 @@ public class GameServer implements GameListener
 		game = new Game(players);
 		game.setGameListener(this);
 		game.addActionAndReturnImmediately(new GameActionStartGame());
+		
+		Server.LOGGER.info("Game started on server " + serverCode);
 	}
 	
 	@Override
@@ -113,6 +120,8 @@ public class GameServer implements GameListener
 		game = null;
 		broadcastUsersUpdate();
 		broadcastServerStatus();
+		
+		Server.LOGGER.info("Game ended on server " + serverCode);
 	}
 	
 	@Override
@@ -174,13 +183,15 @@ public class GameServer implements GameListener
 	{
 		while(actionsQueue.hasUnprocessedActions())
 		{
-			ServerAction action = actionsQueue.peekAction();
+			ServerAction action = actionsQueue.peekActionIfUnprocessed();
+			if(action == null) continue;
 			Object result = action.execute(this);
 			actionsQueue.setResult(action, result);
 		}
 		if(game != null) game.executeActions();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <R> R addActionAndWaitForResult(ServerAction<R> action)
 	{
 		if(action == null) return null;
