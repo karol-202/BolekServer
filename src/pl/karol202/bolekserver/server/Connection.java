@@ -20,7 +20,8 @@ import java.net.Socket;
 public class Connection
 {
 	private static final boolean PING_ENABLE = true;
-	private static final int MAX_UNANSWERED_PINGS = 10;
+	private static final int MAX_UNANSWERED_PINGS = 5;
+	private static final int PING_TIME = 2000;
 	
 	private GameServersManager gameServersManager;
 	private GameServer gameServer;
@@ -187,7 +188,7 @@ public class Connection
 	{
 		while(isConnected())
 		{
-			Thread.sleep(1000);
+			Thread.sleep(PING_TIME);
 			writePacket(new OutputPacketPing());
 			unansweredPings++;
 			if(unansweredPings > MAX_UNANSWERED_PINGS) closeSocket();

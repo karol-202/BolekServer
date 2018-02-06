@@ -70,11 +70,11 @@ public interface PlayerAdapter
 	
 	void sendPresidentChoosingPresidentMessage();
 	
-	void sendChoosePresidentRequestToPresident();
+	void sendChoosePresidentRequestToPresident(boolean update, Stream<Player> availablePlayers);
 	
 	void sendPresidentLustratingMessage();
 	
-	void sendLustrationRequestToPresident();
+	void sendLustrationRequestToPresident(boolean update, Stream<Player> availablePlayers);
 	
 	void sendYouAreLustratedMessage();
 	

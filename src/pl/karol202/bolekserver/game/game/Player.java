@@ -186,9 +186,9 @@ public class Player
 		adapter.sendPresidentChoosingPresidentMessage();
 	}
 	
-	void sendChoosePresidentRequestToPresident()
+	void sendChoosePresidentRequestToPresident(boolean update, Stream<Player> availablePlayers)
 	{
-		adapter.sendChoosePresidentRequestToPresident();
+		adapter.sendChoosePresidentRequestToPresident(update, availablePlayers);
 	}
 	
 	void sendPresidentLustratingMessage()
@@ -196,9 +196,9 @@ public class Player
 		adapter.sendPresidentLustratingMessage();
 	}
 	
-	void sendLustrationRequestToPresident()
+	void sendLustrationRequestToPresident(boolean update, Stream<Player> availablePlayers)
 	{
-		adapter.sendLustrationRequestToPresident();
+		adapter.sendLustrationRequestToPresident(update, availablePlayers);
 	}
 	
 	void sendYouAreLustratedMessage()

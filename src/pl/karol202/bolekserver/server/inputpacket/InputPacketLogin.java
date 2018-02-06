@@ -44,6 +44,7 @@ public class InputPacketLogin implements InputControlPacket
 		if(user == null)
 		{
 			connection.sendPacket(new OutputPacketFailure(getUserAddingProblemCode(error.getError())));
+			connection.setGameServer(null);
 			return;
 		}
 		connection.setUser(user);

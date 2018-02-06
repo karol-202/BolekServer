@@ -143,7 +143,8 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	@Override
 	public void sendChooseActsOrVetoRequestToPrimeMinister(Act[] acts)
 	{
-		OutputPacketChooseActsOrVetoPrimeMinister packet = new OutputPacketChooseActsOrVetoPrimeMinister();
+		String[] strings = Stream.of(acts).map(Enum::name).toArray(String[]::new);
+		OutputPacketChooseActsOrVetoPrimeMinister packet = new OutputPacketChooseActsOrVetoPrimeMinister(strings);
 		connection.sendPacket(packet);
 	}
 	
@@ -255,9 +256,10 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendChoosePresidentRequestToPresident()
+	public void sendChoosePresidentRequestToPresident(boolean update, Stream<Player> availablePlayers)
 	{
-		OutputPacketChoosePresident packet = new OutputPacketChoosePresident();
+		OutputPacketChoosePresident packet = new OutputPacketChoosePresident(update);
+		availablePlayers.forEach(p -> packet.addAvailablePlayer(p.getName()));
 		connection.sendPacket(packet);
 	}
 	
@@ -269,9 +271,10 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendLustrationRequestToPresident()
+	public void sendLustrationRequestToPresident(boolean update, Stream<Player> availablePlayers)
 	{
-		OutputPacketLustratePresident packet = new OutputPacketLustratePresident();
+		OutputPacketLustratePresident packet = new OutputPacketLustratePresident(update);
+		availablePlayers.forEach(p -> packet.addAvailablePlayer(p.getName()));
 		connection.sendPacket(packet);
 	}
 	
