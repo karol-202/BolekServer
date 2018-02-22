@@ -18,6 +18,7 @@ public class Game
 	private static final int MIN_PLAYERS = 2;
 	
 	private List<Player> players;
+	private int initialPlayersAmount;
 	private boolean gameEnd;
 	private boolean nextTurn;
 	
@@ -59,8 +60,8 @@ public class Game
 	{
 		this.players = new ArrayList<>(players);
 		this.players.forEach(p -> p.init(this));
+		this.initialPlayersAmount = players.size();
 		this.incomingActs = new Stack<>();
-		
 		this.actionsQueue = new ActionsQueue<>();
 	}
 	
@@ -79,7 +80,7 @@ public class Game
 		Player bolek = getRandomPlayerWithoutRole();
 		if(bolek != null) bolek.assignRole(Role.BOLEK);
 		
-		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(players.size()))
+		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(initialPlayersAmount))
 									 .forEach(p -> p.assignRole(Role.COLLABORATOR));
 		
 		getRandomPlayersWithoutRole().forEach(p -> p.assignRole(Role.MINISTER));
@@ -580,12 +581,12 @@ public class Game
 	
 	private boolean canPresidentCheckPlayer()
 	{
-		return passedAntilustrationActs == 1;// && players.size() > 8;
+		return passedAntilustrationActs == 1;// && initialPlayersAmount > 8;
 	}
 	
 	private boolean canPresidentCheckPlayerOrActs()
 	{
-		return passedAntilustrationActs == 2;// && players.size() > 6;
+		return passedAntilustrationActs == 2;// && initialPlayersAmount > 6;
 	}
 	
 	private boolean canPresidentChoosePresident()
