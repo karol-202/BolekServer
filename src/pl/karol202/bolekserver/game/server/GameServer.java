@@ -6,7 +6,6 @@ import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.game.GameActionStartGame;
 import pl.karol202.bolekserver.game.game.GameListener;
 import pl.karol202.bolekserver.game.game.Player;
-import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.Server;
 
 import java.util.ArrayList;
@@ -44,27 +43,27 @@ public class GameServer implements GameListener
 		this.actionsQueue = new ActionsQueue<>();
 	}
 	
-	User addNewUser(String username, Connection connection, ErrorReference<UserAddingError> error)
+	boolean addNewUser(User user, ErrorReference<UserAddingError> error)
 	{
+		String username = user.getName();
 		if(username == null || username.isEmpty() || username.length() > MAX_USERNAME_LENGTH)
 		{
 			error.setError(UserAddingError.INVALID_NAME);
-			return null;
+			return false;
 		}
 		if(users.size() >= MAX_USERS)
 		{
 			error.setError(UserAddingError.TOO_MANY_USERS);
-			return null;
+			return false;
 		}
 		if(isUsernameUsed(username))
 		{
 			error.setError(UserAddingError.USERNAME_BUSY);
-			return null;
+			return false;
 		}
 		
 		if(!shouldExist) shouldExist = true;
 		
-		User user = new User(username, connection);
 		users.add(user);
 		
 		sendLoggedInMessage(user);
@@ -73,7 +72,7 @@ public class GameServer implements GameListener
 		sendAllMessages(user);
 		
 		Server.LOGGER.info("User " + username + " joined server " + serverCode);
-		return user;
+		return true;
 	}
 	
 	boolean removeUser(User user)

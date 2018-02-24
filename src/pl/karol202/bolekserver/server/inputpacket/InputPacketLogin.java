@@ -14,12 +14,14 @@ public class InputPacketLogin implements InputControlPacket
 {
 	private int serverCode;
 	private String username;
+	private int apiVersion;
 	
 	@Override
 	public void readData(DataBundle bundle)
 	{
 		serverCode = bundle.getInt("serverCode", -1);
 		username = bundle.getString("username", "Unnamed user");
+		apiVersion = bundle.getInt("apiVersion", 1);
 	}
 	
 	@Override
@@ -37,16 +39,16 @@ public class InputPacketLogin implements InputControlPacket
 			connection.sendPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_SERVER_CODE_INVALID));
 			return;
 		}
-		connection.setGameServer(server);
 		
+		User user = new User(username, connection, apiVersion);
 		ErrorReference<GameServer.UserAddingError> error = new ErrorReference<>();
-		User user = server.addActionAndWaitForResult(new ServerActionAddUser(username, connection, error));
-		if(user == null)
+		boolean result = server.addActionAndWaitForResult(new ServerActionAddUser(user, error));
+		if(!result)
 		{
 			connection.sendPacket(new OutputPacketFailure(getUserAddingProblemCode(error.getError())));
-			connection.setGameServer(null);
 			return;
 		}
+		connection.setGameServer(server);
 		connection.setUser(user);
 	}
 	

@@ -2,6 +2,7 @@ package pl.karol202.bolekserver.game.game;
 
 import pl.karol202.bolekserver.game.server.User;
 import pl.karol202.bolekserver.game.server.UserAdapter;
+import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.PlayerAdapterConnection;
 import pl.karol202.bolekserver.server.UserAdapterConnection;
 
@@ -17,8 +18,20 @@ public class Player
 	public Player(User user, UserAdapter adapter)
 	{
 		this.user = user;
+		
 		if(adapter instanceof UserAdapterConnection)
-			this.adapter = new PlayerAdapterConnection(((UserAdapterConnection) adapter).getConnection());
+			this.adapter = createPlayerAdapter((UserAdapterConnection) adapter);
+	}
+	
+	private PlayerAdapter createPlayerAdapter(UserAdapterConnection userAdapter)
+	{
+		Connection connection = userAdapter.getConnection();
+		int api = userAdapter.getAPIVersion();
+		switch(api)
+		{
+		case 1: return new PlayerAdapterConnection(connection);
+		}
+		return null;
 	}
 	
 	void init(Game game)

@@ -11,11 +11,20 @@ public class User
 	private UserAdapter adapter;
 	private boolean ready;
 	
-	User(String name, Connection connection)
+	public User(String name, Connection connection, int apiVersion)
 	{
 		this.name = name;
-		this.adapter = new UserAdapterConnection(connection);
+		this.adapter = createUserAdapter(connection, apiVersion);
 		this.ready = false;
+	}
+	
+	private UserAdapter createUserAdapter(Connection connection, int apiVersion)
+	{
+		switch(apiVersion)
+		{
+		case 1: return new UserAdapterConnection(connection);
+		}
+		return null;
 	}
 	
 	void sendLoggedInMessage(String serverName, int serverCode)

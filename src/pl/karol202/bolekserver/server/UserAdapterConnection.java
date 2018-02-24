@@ -18,6 +18,11 @@ public class UserAdapterConnection implements UserAdapter
 		this.connection = connection;
 	}
 	
+	public int getAPIVersion()
+	{
+		return 1;
+	}
+	
 	@Override
 	public void sendLoggedInMessage(String serverName, int serverCode)
 	{

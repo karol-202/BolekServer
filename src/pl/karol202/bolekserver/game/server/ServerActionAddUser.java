@@ -1,24 +1,21 @@
 package pl.karol202.bolekserver.game.server;
 
 import pl.karol202.bolekserver.game.ErrorReference;
-import pl.karol202.bolekserver.server.Connection;
 
-public class ServerActionAddUser implements ServerAction<User>
+public class ServerActionAddUser implements ServerAction<Boolean>
 {
-	private String username;
-	private Connection connection;
+	private User user;
 	private ErrorReference<GameServer.UserAddingError> error;
 	
-	public ServerActionAddUser(String username, Connection connection, ErrorReference<GameServer.UserAddingError> error)
+	public ServerActionAddUser(User user, ErrorReference<GameServer.UserAddingError> error)
 	{
-		this.username = username;
-		this.connection = connection;
+		this.user = user;
 		this.error = error;
 	}
 	
 	@Override
-	public User execute(GameServer server)
+	public Boolean execute(GameServer server)
 	{
-		return server.addNewUser(username, connection, error);
+		return server.addNewUser(user, error);
 	}
 }

@@ -14,12 +14,14 @@ public class InputPacketCreateServer implements InputControlPacket
 {
 	private String name;
 	private String username;
+	private int apiVersion;
 	
 	@Override
 	public void readData(DataBundle bundle)
 	{
 		name = bundle.getString("name", "New server");
 		username = bundle.getString("username", "Unnamed user");
+		apiVersion = bundle.getInt("apiVersion", 1);
 	}
 	
 	@Override
@@ -38,15 +40,16 @@ public class InputPacketCreateServer implements InputControlPacket
 			connection.sendPacket(new OutputPacketFailure(getServerCreationProblemCode(scError.getError())));
 			return;
 		}
-		connection.setGameServer(server);
 		
+		User user = new User(username, connection, apiVersion);
 		ErrorReference<GameServer.UserAddingError> uaError = new ErrorReference<>();
-		User user = server.addActionAndWaitForResult(new ServerActionAddUser(username, connection, uaError));
-		if(user == null)
+		boolean result = server.addActionAndWaitForResult(new ServerActionAddUser(user, uaError));
+		if(!result)
 		{
 			connection.sendPacket(new OutputPacketFailure(getUserAddingProblemCode(uaError.getError())));
 			return;
 		}
+		connection.setGameServer(server);
 		connection.setUser(user);
 	}
 	
