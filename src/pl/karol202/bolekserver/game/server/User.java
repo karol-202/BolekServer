@@ -10,12 +10,14 @@ public class User
 	private String name;
 	private UserAdapter adapter;
 	private boolean ready;
+	private String address;
 	
 	public User(String name, Connection connection, int apiVersion)
 	{
 		this.name = name;
 		this.adapter = createUserAdapter(connection, apiVersion);
 		this.ready = false;
+		this.address = connection.getAddress();
 	}
 	
 	private UserAdapter createUserAdapter(Connection connection, int apiVersion)
@@ -65,5 +67,10 @@ public class User
 	void setReady(boolean ready)
 	{
 		this.ready = ready;
+	}
+	
+	public String getAddress()
+	{
+		return address;
 	}
 }

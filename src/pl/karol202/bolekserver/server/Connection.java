@@ -33,6 +33,7 @@ public class Connection
 	private Socket socket;
 	private InputStream inputStream;
 	private OutputStream outputStream;
+	private String address;
 	
 	Connection(GameServersManager gameServersManager)
 	{
@@ -63,6 +64,7 @@ public class Connection
 		this.socket = socket;
 		this.inputStream = socket.getInputStream();
 		this.outputStream = socket.getOutputStream();
+		this.address = socket.getInetAddress().getHostAddress();
 	}
 	
 	void run()
@@ -198,6 +200,11 @@ public class Connection
 	private boolean isConnected()
 	{
 		return socket.isConnected() && !socket.isClosed();
+	}
+	
+	public String getAddress()
+	{
+		return address;
 	}
 	
 	public boolean isGameServerSet()

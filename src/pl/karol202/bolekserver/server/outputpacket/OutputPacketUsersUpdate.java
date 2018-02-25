@@ -9,11 +9,13 @@ public class OutputPacketUsersUpdate implements OutputPacket
 {
 	private List<String> users;
 	private List<Boolean> readiness;
+	private List<String> addresses;
 	
 	public OutputPacketUsersUpdate()
 	{
 		users = new ArrayList<>();
 		readiness = new ArrayList<>();
+		addresses = new ArrayList<>();
 	}
 	
 	@Override
@@ -24,6 +26,7 @@ public class OutputPacketUsersUpdate implements OutputPacket
 		{
 			bundle.putString("user" + i, users.get(i));
 			bundle.putBoolean("ready" + i, readiness.get(i));
+			bundle.putString("inetAddress" + i, addresses.get(i));
 		}
 	}
 	
@@ -33,9 +36,10 @@ public class OutputPacketUsersUpdate implements OutputPacket
 		return "USERSUPDATE";
 	}
 	
-	public void addUser(String user, boolean ready)
+	public void addUser(String user, boolean ready, String address)
 	{
 		users.add(user);
 		readiness.add(ready);
+		addresses.add(address);
 	}
 }

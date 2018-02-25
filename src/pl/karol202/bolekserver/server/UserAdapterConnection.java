@@ -33,7 +33,7 @@ public class UserAdapterConnection implements UserAdapter
 	public void sendUsersListMessage(Stream<User> users)
 	{
 		OutputPacketUsersUpdate packet = new OutputPacketUsersUpdate();
-		users.forEach(u -> packet.addUser(u.getName(), u.isReady()));
+		users.forEach(u -> packet.addUser(u.getName(), u.isReady(), u.getAddress()));
 		connection.sendPacket(packet);
 	}
 	
