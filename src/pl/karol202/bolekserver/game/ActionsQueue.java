@@ -2,27 +2,59 @@ package pl.karol202.bolekserver.game;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ActionsQueue<A extends Action>
+public class ActionsQueue
 {
-	private class ActionAndResult
+	class ActionAndTarget<A extends Action<T, ?>, T extends Target>
 	{
 		private A action;
-		private boolean removeImmediately;
-		private Object result;
-		private boolean processed;
+		private T target;
 		
-		ActionAndResult(A action, boolean removeImmediately)
+		private ActionAndTarget(A action, T target)
 		{
 			this.action = action;
+			this.target = target;
+		}
+		
+		A getAction()
+		{
+			return action;
+		}
+		
+		T getTarget()
+		{
+			return target;
+		}
+	}
+	
+	private class ActionData<A extends Action<T, R>, T extends Target, R>
+	{
+		private ActionAndTarget<A, T> actionAndTarget;
+		private boolean removeImmediately;
+		private R result;
+		private boolean processed;
+		
+		private ActionData(A action, T target, boolean removeImmediately)
+		{
+			this.actionAndTarget = new ActionAndTarget<>(action, target);
 			this.removeImmediately = removeImmediately;
 		}
 		
-		Object getResult()
+		ActionAndTarget<A, T> getActionAndTarget()
+		{
+			return actionAndTarget;
+		}
+		
+		A getAction()
+		{
+			return actionAndTarget.action;
+		}
+		
+		R getResult()
 		{
 			return result;
 		}
 		
-		void setResult(Object result)
+		void setResult(R result)
 		{
 			this.result = result;
 			this.processed = true;
@@ -34,59 +66,61 @@ public class ActionsQueue<A extends Action>
 		}
 	}
 	
-	private ConcurrentLinkedQueue<ActionAndResult> queue;
+	private ConcurrentLinkedQueue<ActionData> queue;
 	
 	public ActionsQueue()
 	{
 		queue = new ConcurrentLinkedQueue<>();
 	}
 	
-	public void addAction(A action, boolean removeImmediately)
+	public <A extends Action<T, R>, T extends Target, R> void addAction(A action, T target, boolean removeImmediately)
 	{
-		queue.add(new ActionAndResult(action, removeImmediately));
+		queue.add(new ActionData<>(action, target, removeImmediately));
 	}
 	
-	public void removeAction(A action)
+	public void removeAction(Action action)
 	{
-		ActionAndResult aar = null;
-		for(ActionAndResult actionAndResult : queue)
-			if(actionAndResult.action == action) aar = actionAndResult;
+		ActionData aar = null;
+		for(ActionData actionData : queue)
+			if(actionData.getAction() == action) aar = actionData;
 		if(aar != null) queue.remove(aar);
 	}
 	
-	public A peekActionIfUnprocessed()
+	@SuppressWarnings("unchecked")
+	public <A extends Action<T, R>, T extends Target, R> ActionAndTarget<A, T> peekActionAndTargetIfUnprocessed()
 	{
-		ActionAndResult action = queue.peek();
+		ActionData<A, T, R> action = queue.peek();
 		queue.remove(action);
 		if(!action.removeImmediately) queue.add(action);
 		if(action.isProcessed()) return null;
-		return action.action;
+		return action.getActionAndTarget();
 	}
 	
 	public boolean hasUnprocessedActions()
 	{
-		for(ActionAndResult actionAndResult : queue)
-			if(!actionAndResult.isProcessed()) return true;
+		for(ActionData actionData : queue)
+			if(!actionData.isProcessed()) return true;
 		return false;
 	}
 	
-	public boolean isResultSetForAction(A action)
+	public boolean isResultSetForAction(Action action)
 	{
-		for(ActionAndResult actionAndResult : queue)
-			if(actionAndResult.action == action) return actionAndResult.isProcessed();
+		for(ActionData actionData : queue)
+			if(actionData.getAction() == action) return actionData.isProcessed();
 		return false;
 	}
 	
-	public Object getResult(A action)
+	public Object getResult(Action action)
 	{
-		for(ActionAndResult actionAndResult : queue)
-			if(actionAndResult.action == action) return actionAndResult.getResult();
+		for(ActionData actionData : queue)
+			if(actionData.getAction() == action) return actionData.getResult();
 		return null;
 	}
 	
-	public void setResult(A action, Object result)
+	@SuppressWarnings("unchecked")
+	public void setResult(Action action, Object result)
 	{
-		for(ActionAndResult actionAndResult : queue)
-			if(actionAndResult.action == action) actionAndResult.setResult(result);
+		for(ActionData actionData : queue)
+			if(actionData.getAction() == action) actionData.setResult(result);
 	}
 }

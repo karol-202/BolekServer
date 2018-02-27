@@ -1,6 +1,7 @@
 package pl.karol202.bolekserver.game.game;
 
-import pl.karol202.bolekserver.game.ActionsQueue;
+import pl.karol202.bolekserver.game.Looper;
+import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.server.Utils;
 
 import java.util.*;
@@ -8,7 +9,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class Game
+public class Game implements Target
 {
 	public enum UserChoosingError
 	{
@@ -17,6 +18,7 @@ public class Game
 	
 	private static final int MIN_PLAYERS = 2;
 	
+	private Looper looper;
 	private List<Player> players;
 	private int initialPlayersAmount;
 	private boolean gameEnd;
@@ -53,16 +55,15 @@ public class Game
 	private boolean choosingPresident;
 	private boolean lustratingByPresident;
 	
-	private ActionsQueue<GameAction> actionsQueue;
 	private GameListener gameListener;
 	
-	public Game(List<Player> players)
+	public Game(Looper looper, List<Player> players)
 	{
+		this.looper = looper;
 		this.players = new ArrayList<>(players);
 		this.players.forEach(p -> p.init(this));
 		this.initialPlayersAmount = players.size();
 		this.incomingActs = new Stack<>();
-		this.actionsQueue = new ActionsQueue<>();
 	}
 	
 	void startGame()
@@ -860,34 +861,14 @@ public class Game
 		players.forEach(Player::sendTooFewPlayers);
 	}
 	
-	public void executeActions()
-	{
-		while(actionsQueue.hasUnprocessedActions())
-		{
-			GameAction action = actionsQueue.peekActionIfUnprocessed();
-			if(action == null) continue;
-			Object result = action.execute(this);
-			actionsQueue.setResult(action, result);
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
 	public <R> R addActionAndWaitForResult(GameAction<R> action)
 	{
-		if(action == null) return null;
-		actionsQueue.addAction(action, false);
-		
-		do Thread.yield();
-		while(!actionsQueue.isResultSetForAction(action));
-		
-		Object result = actionsQueue.getResult(action);
-		actionsQueue.removeAction(action);
-		return (R) result;
+		return looper.addActionAndWaitForResult(action, this);
 	}
 	
-	public void addActionAndReturnImmediately(GameAction action)
+	public void addActionAndReturnImmediately(GameAction<?> action)
 	{
-		if(action != null) actionsQueue.addAction(action, true);
+		looper.addActionAndReturnImmediately(action, this);
 	}
 	
 	public void setGameListener(GameListener gameListener)

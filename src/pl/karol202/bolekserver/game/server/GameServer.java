@@ -1,7 +1,8 @@
 package pl.karol202.bolekserver.game.server;
 
-import pl.karol202.bolekserver.game.ActionsQueue;
 import pl.karol202.bolekserver.game.ErrorReference;
+import pl.karol202.bolekserver.game.Looper;
+import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.game.GameActionStartGame;
 import pl.karol202.bolekserver.game.game.GameListener;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GameServer implements GameListener
+public class GameServer implements Target, GameListener
 {
 	public enum UserAddingError
 	{
@@ -23,24 +24,22 @@ public class GameServer implements GameListener
 	private static final int MIN_USERS = 2;
 	private static final int MAX_USERS = 10;
 	
+	private Looper looper;
 	private String name;
 	private int serverCode;
 	private List<User> users;
 	private Game game;
-	private boolean shouldExist;
 	private List<Message> messages;
 	
-	private ActionsQueue<ServerAction> actionsQueue;
+	private ServerListener serverListener;
 	
-	public GameServer(String name, int serverCode)
+	public GameServer(Looper looper, String name, int serverCode)
 	{
+		this.looper = looper;
 		this.name = name;
 		this.serverCode = serverCode;
 		this.users = new ArrayList<>();
-		this.shouldExist = true;
 		this.messages = new ArrayList<>();
-		
-		this.actionsQueue = new ActionsQueue<>();
 	}
 	
 	boolean addNewUser(User user, ErrorReference<UserAddingError> error)
@@ -62,8 +61,6 @@ public class GameServer implements GameListener
 			return false;
 		}
 		
-		if(!shouldExist) shouldExist = true;
-		
 		users.add(user);
 		
 		sendLoggedInMessage(user);
@@ -81,7 +78,7 @@ public class GameServer implements GameListener
 		users.remove(user);
 		
 		broadcastUsersUpdate();
-		if(users.isEmpty()) shouldExist = false;
+		if(users.isEmpty()) serverListener.onServerEmpty();
 		
 		Server.LOGGER.info("User " + user.getName() + " leaved server " + serverCode);
 		return true;
@@ -106,7 +103,7 @@ public class GameServer implements GameListener
 	{
 		users.forEach(u -> u.setReady(false));
 		List<Player> players = users.stream().map(u -> new Player(u, u.getAdapter())).collect(Collectors.toList());
-		game = new Game(players);
+		game = new Game(looper, players);
 		game.setGameListener(this);
 		game.addActionAndReturnImmediately(new GameActionStartGame());
 		
@@ -178,35 +175,14 @@ public class GameServer implements GameListener
 		messages.forEach(m -> user.sendMessage(m.getSender(), m.getMessage()));
 	}
 	
-	public void executeActions()
-	{
-		while(actionsQueue.hasUnprocessedActions())
-		{
-			ServerAction action = actionsQueue.peekActionIfUnprocessed();
-			if(action == null) continue;
-			Object result = action.execute(this);
-			actionsQueue.setResult(action, result);
-		}
-		if(game != null) game.executeActions();
-	}
-	
-	@SuppressWarnings("unchecked")
 	public <R> R addActionAndWaitForResult(ServerAction<R> action)
 	{
-		if(action == null) return null;
-		actionsQueue.addAction(action, false);
-		
-		do Thread.yield();
-		while(!actionsQueue.isResultSetForAction(action));
-		
-		Object result = actionsQueue.getResult(action);
-		actionsQueue.removeAction(action);
-		return (R) result;
+		return looper.addActionAndWaitForResult(action, this);
 	}
 	
-	public void addActionAndReturnImmediately(ServerAction action)
+	public void addActionAndReturnImmediately(ServerAction<?> action)
 	{
-		if(action != null) actionsQueue.addAction(action, true);
+		looper.addActionAndReturnImmediately(action, this);
 	}
 	
 	public String getName()
@@ -219,8 +195,8 @@ public class GameServer implements GameListener
 		return serverCode;
 	}
 	
-	public boolean shouldLongerExist()
+	public void setServerListener(ServerListener serverListener)
 	{
-		return shouldExist;
+		this.serverListener = serverListener;
 	}
 }

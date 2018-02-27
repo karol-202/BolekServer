@@ -1,10 +1,12 @@
 package pl.karol202.bolekserver;
 
+import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.server.Server;
 
 public class Main
 {
+	private Looper looper;
 	private GameServersManager gameServersManager;
 	private Server server;
 	
@@ -12,15 +14,16 @@ public class Main
 	{
 		Server.configureLogger();
 		
-		gameServersManager = new GameServersManager();
-		runGameManagerThread();
+		looper = new Looper();
+		runLooper();
 		
+		gameServersManager = new GameServersManager(looper);
 		server = new Server(gameServersManager);
 	}
 	
-	private void runGameManagerThread()
+	private void runLooper()
 	{
-		Thread thread = new Thread(() -> gameServersManager.run());
+		Thread thread = new Thread(() -> looper.run());
 		thread.setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
 		thread.start();
 	}

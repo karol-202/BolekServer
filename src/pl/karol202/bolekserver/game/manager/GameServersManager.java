@@ -1,16 +1,16 @@
 package pl.karol202.bolekserver.game.manager;
 
-import pl.karol202.bolekserver.game.ActionsQueue;
 import pl.karol202.bolekserver.game.ErrorReference;
+import pl.karol202.bolekserver.game.Looper;
+import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.server.Server;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
-public class GameServersManager
+public class GameServersManager implements Target
 {
 	public enum ServerCreationError
 	{
@@ -20,17 +20,13 @@ public class GameServersManager
 	private static final int MAX_SERVER_NAME_LENGTH = 20;
 	private static final int MAX_SERVERS = 10;
 	
+	private Looper looper;
 	private List<GameServer> servers;
 	
-	private ActionsQueue<ConnectionAction> actionsQueue;
-	private boolean suspend;
-	
-	public GameServersManager()
+	public GameServersManager(Looper looper)
 	{
+		this.looper = looper;
 		this.servers = new ArrayList<>();
-		
-		this.actionsQueue = new ActionsQueue<>();
-		this.suspend = false;
 	}
 	
 	GameServer createNewGameServer(String name, ErrorReference<ServerCreationError> error)
@@ -45,7 +41,8 @@ public class GameServersManager
 			error.setError(ServerCreationError.TOO_MANY_SERVERS);
 			return null;
 		}
-		GameServer server = new GameServer(name, getUniqueServerCode());
+		GameServer server = new GameServer(looper, name, getUniqueServerCode());
+		server.setServerListener(() -> removeEmptyServer(server));
 		servers.add(server);
 		
 		Server.LOGGER.info("Created new server: " + name + ", " + server.getServerCode());
@@ -74,46 +71,13 @@ public class GameServersManager
 		return code;
 	}
 	
-	private void removeRidiculousServers()
+	private void removeEmptyServer(GameServer server)
 	{
-		servers = servers.stream().filter(GameServer::shouldLongerExist).collect(Collectors.toList());
+		servers.remove(server);
 	}
 	
-	public void run()
-	{
-		while(!suspend) executeActions();
-	}
-	
-	private void executeActions()
-	{
-		while(actionsQueue.hasUnprocessedActions())
-		{
-			ConnectionAction action = actionsQueue.peekActionIfUnprocessed();
-			if(action == null) continue;
-			Object result = action.execute(this);
-			actionsQueue.setResult(action, result);
-		}
-		servers.forEach(GameServer::executeActions);
-		removeRidiculousServers();
-		Thread.yield();
-	}
-	
-	public void suspend()
-	{
-		suspend = true;
-	}
-	
-	@SuppressWarnings("unchecked")
 	public <R> R addActionAndWaitForResult(ConnectionAction<R> action)
 	{
-		if(action == null) return null;
-		actionsQueue.addAction(action, false);
-		
-		do Thread.yield();
-		while(!actionsQueue.isResultSetForAction(action));
-		
-		Object result = actionsQueue.getResult(action);
-		actionsQueue.removeAction(action);
-		return (R) result;
+		return looper.addActionAndWaitForResult(action, this);
 	}
 }
