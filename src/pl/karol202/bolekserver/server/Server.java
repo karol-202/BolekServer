@@ -12,7 +12,7 @@ public class Server
 {
 	public static final Logger LOGGER = Logger.getLogger("bolek");
 	
-	private static final int PORT = 6006;
+	private static final int PORT = 60606;
 	
 	private GameServersManager gameServersManager;
 	private ServerSocket serverSocket;
