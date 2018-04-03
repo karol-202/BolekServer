@@ -12,7 +12,7 @@ public interface PlayerAdapter
 	
 	void sendRoleAssignmentMessage(Role role);
 	
-	void sendCollaboratorsRevealmentMessages(Stream<Player> collaborators, Player bolek);
+	void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek);
 	
 	void sendStackRefillMessage(int totalActs);
 	

@@ -4,6 +4,7 @@ import pl.karol202.bolekserver.game.server.User;
 import pl.karol202.bolekserver.game.server.UserAdapter;
 import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.PlayerAdapterConnection;
+import pl.karol202.bolekserver.server.PlayerAdapterConnectionAPI3;
 import pl.karol202.bolekserver.server.UserAdapterConnection;
 
 import java.util.stream.Stream;
@@ -29,7 +30,9 @@ public class Player
 		int api = userAdapter.getAPIVersion();
 		switch(api)
 		{
-		case 1: return new PlayerAdapterConnection(connection);
+		case 1:
+		case 2: return new PlayerAdapterConnection(connection);
+		case 3: return new PlayerAdapterConnectionAPI3(connection);
 		}
 		return null;
 	}
@@ -54,9 +57,9 @@ public class Player
 		adapter.sendRoleAssignmentMessage(role);
 	}
 	
-	void sendCollaboratorsRevealmentMessage(Stream<Player> collaborators, Player bolek)
+	void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek)
 	{
-		adapter.sendCollaboratorsRevealmentMessages(collaborators, bolek);
+		adapter.sendCollaboratorsRevealmentMessage(ministers, collaborators, bolek);
 	}
 	
 	void sendStackRefillMessage(int totalActs)

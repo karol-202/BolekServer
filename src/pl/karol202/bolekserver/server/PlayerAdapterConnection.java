@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 public class PlayerAdapterConnection implements PlayerAdapter
 {
-	private Connection connection;
+	Connection connection;
 	
 	public PlayerAdapterConnection(Connection connection)
 	{
@@ -44,7 +44,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendCollaboratorsRevealmentMessages(Stream<Player> collaborators, Player bolek)
+	public void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek)
 	{
 		OutputPacketCollaboratorsRevealment packet = new OutputPacketCollaboratorsRevealment(bolek.getName());
 		collaborators.forEach(p -> packet.addCollaborator(p.getName()));

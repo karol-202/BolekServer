@@ -654,11 +654,12 @@ public class Game implements Target
 	
 	private void sendCollaboratorsRevealmentMessagesTo(Stream<Player> targetPlayers)
 	{
+		Supplier<Stream<Player>> ministersSupplier = () -> initialPlayers.stream().filter(Player::isMinister);
 		Supplier<Stream<Player>> collaboratorsSupplier = () -> initialPlayers.stream().filter(Player::isCollaborator);
 		Player bolek = initialPlayers.stream().filter(Player::isBolek).findAny().orElse(null);
 		if(bolek == null) return;
 		
-		targetPlayers.forEach(p -> p.sendCollaboratorsRevealmentMessage(collaboratorsSupplier.get(), bolek));
+		targetPlayers.forEach(p -> p.sendCollaboratorsRevealmentMessage(ministersSupplier.get(), collaboratorsSupplier.get(), bolek));
 	}
 	
 	private void broadcastStackRefill()

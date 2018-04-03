@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 public class UserAdapterConnection implements UserAdapter
 {
-	private Connection connection;
+	Connection connection;
 	
 	public UserAdapterConnection(Connection connection)
 	{
@@ -33,7 +33,7 @@ public class UserAdapterConnection implements UserAdapter
 	public void sendUsersListMessage(Stream<User> users)
 	{
 		OutputPacketUsersUpdate packet = new OutputPacketUsersUpdate();
-		users.forEach(u -> packet.addUser(u.getName(), u.isReady(), u.getAddress()));
+		users.forEach(u -> packet.addUser(u.getName(), u.isReady()));
 		connection.sendPacket(packet);
 	}
 	
