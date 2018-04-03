@@ -79,6 +79,7 @@ public class GameServer implements Target, GameListener
 		
 		broadcastUsersUpdate();
 		if(users.isEmpty()) serverListener.onServerEmpty();
+		checkForReadiness();
 		
 		Server.LOGGER.info("User " + user.getName() + " leaved server " + serverCode);
 		return true;

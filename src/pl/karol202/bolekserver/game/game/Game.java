@@ -20,7 +20,7 @@ public class Game implements Target
 	
 	private Looper looper;
 	private List<Player> players;
-	private int initialPlayersAmount;
+	private List<Player> initialPlayers;
 	private boolean gameEnd;
 	private boolean nextTurn;
 	
@@ -62,7 +62,7 @@ public class Game implements Target
 		this.looper = looper;
 		this.players = new ArrayList<>(players);
 		this.players.forEach(p -> p.init(this));
-		this.initialPlayersAmount = players.size();
+		this.initialPlayers = new ArrayList<>(players);
 		this.incomingActs = new Stack<>();
 	}
 	
@@ -81,7 +81,7 @@ public class Game implements Target
 		Player bolek = getRandomPlayerWithoutRole();
 		if(bolek != null) bolek.assignRole(Role.BOLEK);
 		
-		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(initialPlayersAmount))
+		getRandomPlayersWithoutRole().limit(Role.getNumberOfCollaborators(initialPlayers.size()))
 									 .forEach(p -> p.assignRole(Role.COLLABORATOR));
 		
 		getRandomPlayersWithoutRole().forEach(p -> p.assignRole(Role.MINISTER));
@@ -654,8 +654,8 @@ public class Game implements Target
 	
 	private void sendCollaboratorsRevealmentMessagesTo(Stream<Player> targetPlayers)
 	{
-		Supplier<Stream<Player>> collaboratorsSupplier = () -> players.stream().filter(Player::isCollaborator);
-		Player bolek = players.stream().filter(Player::isBolek).findAny().orElse(null);
+		Supplier<Stream<Player>> collaboratorsSupplier = () -> initialPlayers.stream().filter(Player::isCollaborator);
+		Player bolek = initialPlayers.stream().filter(Player::isBolek).findAny().orElse(null);
 		if(bolek == null) return;
 		
 		targetPlayers.forEach(p -> p.sendCollaboratorsRevealmentMessage(collaboratorsSupplier.get(), bolek));
@@ -752,7 +752,7 @@ public class Game implements Target
 	private void broadcastMinistersWin(WinCause cause)
 	{
 		players.forEach(p -> {
-			if(p.getRole() == Role.MINISTER) p.sendWinMessage(cause);
+			if(p.isMinister()) p.sendWinMessage(cause);
 			else p.sendLossMessage(cause);
 			p.reset();
 		});
@@ -761,7 +761,7 @@ public class Game implements Target
 	private void broadcastCollaboratorsWin(WinCause cause)
 	{
 		players.forEach(p -> {
-			if(p.getRole() != Role.MINISTER) p.sendWinMessage(cause);
+			if(!p.isMinister()) p.sendWinMessage(cause);
 			else p.sendLossMessage(cause);
 			p.reset();
 		});

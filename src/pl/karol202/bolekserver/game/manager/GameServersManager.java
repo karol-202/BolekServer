@@ -74,6 +74,7 @@ public class GameServersManager implements Target
 	private void removeEmptyServer(GameServer server)
 	{
 		servers.remove(server);
+		Server.LOGGER.info("Removed server: " + server.getName() + ", " + server.getServerCode());
 	}
 	
 	public <R> R addActionAndWaitForResult(ConnectionAction<R> action)
