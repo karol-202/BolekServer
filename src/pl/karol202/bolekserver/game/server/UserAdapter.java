@@ -10,5 +10,5 @@ public interface UserAdapter
 	
 	void sendServerStatusMessage(boolean gameAvailable);
 	
-	void sendMessage(User sender, String message);
+	void sendMessage(User sender, String message, boolean newMessage);
 }

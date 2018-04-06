@@ -168,12 +168,12 @@ public class GameServer implements Target, GameListener
 	
 	private void broadcastMessage(User sender, String message)
 	{
-		users.stream().filter(u -> u != sender).forEach(u -> u.sendMessage(sender, message));
+		users.stream().filter(u -> u != sender).forEach(u -> u.sendMessage(sender, message, true));
 	}
 	
 	private void sendAllMessages(User user)
 	{
-		messages.forEach(m -> user.sendMessage(m.getSender(), m.getMessage()));
+		messages.forEach(m -> user.sendMessage(m.getSender(), m.getMessage(), false));
 	}
 	
 	public <R> R addActionAndWaitForResult(ServerAction<R> action)

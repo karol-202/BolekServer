@@ -47,9 +47,9 @@ public class User
 		adapter.sendServerStatusMessage(gameAvailable);
 	}
 	
-	void sendMessage(User sender, String message)
+	void sendMessage(User sender, String message, boolean newMessage)
 	{
-		adapter.sendMessage(sender, message);
+		adapter.sendMessage(sender, message, newMessage);
 	}
 	
 	public String getName()

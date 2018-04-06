@@ -44,7 +44,7 @@ public class UserAdapterConnection implements UserAdapter
 	}
 	
 	@Override
-	public void sendMessage(User sender, String message)
+	public void sendMessage(User sender, String message, boolean newMessage)
 	{
 		connection.sendPacket(new OutputPacketMessage(sender.getName(), message));
 	}
