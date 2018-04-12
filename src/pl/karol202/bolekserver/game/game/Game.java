@@ -104,8 +104,8 @@ public class Game implements Target
 	{
 		if(incomingActs.size() >= 3) return;
 		incomingActs.clear();
-		for(int i = 0; i < Act.LUSTRATION.getCount(); i++) incomingActs.push(Act.LUSTRATION);
-		for(int i = 0; i < Act.ANTILUSTRATION.getCount(); i++) incomingActs.push(Act.ANTILUSTRATION);
+		for(int i = 0; i < Act.LUSTRATION.getCount() - passedLustrationActs; i++) incomingActs.push(Act.LUSTRATION);
+		for(int i = 0; i < Act.ANTILUSTRATION.getCount() - passedAntilustrationActs; i++) incomingActs.push(Act.ANTILUSTRATION);
 		Collections.shuffle(incomingActs);
 		
 		broadcastStackRefill();
@@ -239,7 +239,7 @@ public class Game implements Target
 	{
 		broadcastRandomActPassed();
 		currentActs = new Act[] { incomingActs.pop() };
-		passAct();
+		passAct(true);
 		if(!gameEnd) refillIncomingActsStack();
 		currentActs = null;
 	}
@@ -277,7 +277,7 @@ public class Game implements Target
 	boolean dismissActByPrimeMinister(Player sender, Act act)
 	{
 		if(!choosingActsPrimeMinister || sender != primeMinister || !dismissAct(act) || currentActs.length != 1) return false;
-		passAct();
+		passAct(false);
 		choosingActsPrimeMinister = false;
 		vetoApplicable = false;
 		currentActs = null;
@@ -335,7 +335,7 @@ public class Game implements Target
 		return true;
 	}
 	
-	private void passAct()
+	private void passAct(boolean random)
 	{
 		if(currentActs == null || currentActs.length == 0) return;
 		Act lastAct = currentActs[0];
@@ -347,7 +347,7 @@ public class Game implements Target
 		checkForWin();
 		if(gameEnd) return;
 		
-		if(lastAct == Act.ANTILUSTRATION) antilustrationActPassed();
+		if(lastAct == Act.ANTILUSTRATION && !random) antilustrationActPassed();
 		else callNextTurn();
 	}
 	
@@ -582,12 +582,12 @@ public class Game implements Target
 	
 	private boolean canPresidentCheckPlayer()
 	{
-		return passedAntilustrationActs == 1;// && initialPlayersAmount > 8;
+		return passedAntilustrationActs == 1 && initialPlayers.size() > 8;
 	}
 	
 	private boolean canPresidentCheckPlayerOrActs()
 	{
-		return passedAntilustrationActs == 2;// && initialPlayersAmount > 6;
+		return passedAntilustrationActs == 2 && initialPlayers.size() > 6;
 	}
 	
 	private boolean canPresidentChoosePresident()
