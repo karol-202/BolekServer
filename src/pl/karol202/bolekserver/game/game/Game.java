@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.game.game;
 
+import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.server.Utils;
@@ -582,12 +583,12 @@ public class Game implements Target
 	
 	private boolean canPresidentCheckPlayer()
 	{
-		return passedAntilustrationActs == 1 && initialPlayers.size() > 8;
+		return passedAntilustrationActs == 1 && (initialPlayers.size() > 8 || ServerProperties.DEBUG);
 	}
 	
 	private boolean canPresidentCheckPlayerOrActs()
 	{
-		return passedAntilustrationActs == 2 && initialPlayers.size() > 6;
+		return passedAntilustrationActs == 2 && (initialPlayers.size() > 6 || ServerProperties.DEBUG);
 	}
 	
 	private boolean canPresidentChoosePresident()

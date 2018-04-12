@@ -8,17 +8,17 @@ public class Main
 {
 	private Looper looper;
 	private GameServersManager gameServersManager;
-	private Server server;
 	
 	private Main()
 	{
 		Server.configureLogger();
+		if(!ServerProperties.tryToLoadProperties()) return;
 		
 		looper = new Looper();
 		runLooper();
 		
 		gameServersManager = new GameServersManager(looper);
-		server = new Server(gameServersManager);
+		new Server(gameServersManager);
 	}
 	
 	private void runLooper()

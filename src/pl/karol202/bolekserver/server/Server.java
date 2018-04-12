@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.server;
 
+import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 
 import java.io.IOException;
@@ -11,8 +12,6 @@ import java.util.logging.Logger;
 public class Server
 {
 	public static final Logger LOGGER = Logger.getLogger("bolek");
-	
-	private static final int PORT = 60606;
 	
 	private GameServersManager gameServersManager;
 	private ServerSocket serverSocket;
@@ -37,7 +36,7 @@ public class Server
 		LOGGER.info("Starting server");
 		try
 		{
-			serverSocket = new ServerSocket(PORT);
+			serverSocket = new ServerSocket(ServerProperties.SERVER_PORT);
 		}
 		catch(IOException e)
 		{

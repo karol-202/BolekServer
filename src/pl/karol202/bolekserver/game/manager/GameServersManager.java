@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.game.manager;
 
+import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
@@ -18,7 +19,6 @@ public class GameServersManager implements Target
 	}
 	
 	private static final int MAX_SERVER_NAME_LENGTH = 20;
-	private static final int MAX_SERVERS = 10;
 	
 	private Looper looper;
 	private List<GameServer> servers;
@@ -36,7 +36,7 @@ public class GameServersManager implements Target
 			error.setError(ServerCreationError.INVALID_NAME);
 			return null;
 		}
-		if(servers.size() >= MAX_SERVERS)
+		if(servers.size() >= ServerProperties.MAX_SERVERS)
 		{
 			error.setError(ServerCreationError.TOO_MANY_SERVERS);
 			return null;

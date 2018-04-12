@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.game.server;
 
+import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
@@ -21,7 +22,7 @@ public class GameServer implements Target, GameListener
 	}
 	
 	private static final int MAX_USERNAME_LENGTH = 20;
-	private static final int MIN_USERS = 2;
+	private static final int MIN_USERS = ServerProperties.DEBUG ? 2 : 5;
 	private static final int MAX_USERS = 10;
 	
 	private Looper looper;
