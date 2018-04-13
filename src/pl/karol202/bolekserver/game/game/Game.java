@@ -22,6 +22,7 @@ public class Game implements Target
 	private Looper looper;
 	private List<Player> players;
 	private List<Player> initialPlayers;
+	private boolean secretImages;
 	private boolean gameEnd;
 	private boolean nextTurn;
 	
@@ -58,12 +59,13 @@ public class Game implements Target
 	
 	private GameListener gameListener;
 	
-	public Game(Looper looper, List<Player> players)
+	public Game(Looper looper, List<Player> players, boolean secretImages)
 	{
 		this.looper = looper;
 		this.players = new ArrayList<>(players);
 		this.players.forEach(p -> p.init(this));
 		this.initialPlayers = new ArrayList<>(players);
+		this.secretImages = secretImages;
 		this.incomingActs = new Stack<>();
 	}
 	
@@ -631,7 +633,7 @@ public class Game implements Target
 	
 	private void broadcastGameStart()
 	{
-		players.forEach(p -> p.sendGameStartMessage(players.stream()));
+		players.forEach(p -> p.sendGameStartMessage(players.stream(), secretImages));
 	}
 	
 	private void sendRoleAssignmentMessages()

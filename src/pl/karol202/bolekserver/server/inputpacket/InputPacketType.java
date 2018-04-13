@@ -21,7 +21,9 @@ enum InputPacketType
 	CHOOSEPRESIDENT(InputPacketChoosePresident::new),
 	LUSTRATEPRESIDENT(InputPacketLustratePresident::new),
 	EXITGAME(InputPacketExitGame::new),
-	PONG(InputPacketPong::new);
+	PONG(InputPacketPong::new),
+	SERVERDATA(InputPacketServerData::new),
+	SECRETOPTION(InputPacketSecretOption::new);
 	
 	private Supplier<InputPacket> packetSupplier;
 	

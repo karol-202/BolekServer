@@ -2,10 +2,7 @@ package pl.karol202.bolekserver.game.game;
 
 import pl.karol202.bolekserver.game.server.User;
 import pl.karol202.bolekserver.game.server.UserAdapter;
-import pl.karol202.bolekserver.server.Connection;
-import pl.karol202.bolekserver.server.PlayerAdapterConnection;
-import pl.karol202.bolekserver.server.PlayerAdapterConnectionAPI3;
-import pl.karol202.bolekserver.server.UserAdapterConnection;
+import pl.karol202.bolekserver.server.*;
 
 import java.util.stream.Stream;
 
@@ -33,6 +30,7 @@ public class Player
 		case 1:
 		case 2: return new PlayerAdapterConnection(connection);
 		case 3: return new PlayerAdapterConnectionAPI3(connection);
+		case 4: return new PlayerAdapterConnectionAPI4(connection);
 		}
 		return null;
 	}
@@ -47,9 +45,9 @@ public class Player
 		if(this.role == null) this.role = role;
 	}
 	
-	void sendGameStartMessage(Stream<Player> players)
+	void sendGameStartMessage(Stream<Player> players, boolean secretImages)
 	{
-		adapter.sendGameStartMessage(players);
+		adapter.sendGameStartMessage(players, secretImages);
 	}
 	
 	void sendRoleAssignmentMessage(Role role)

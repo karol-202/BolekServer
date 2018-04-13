@@ -26,9 +26,13 @@ public class Server
 	
 	public static void configureLogger()
 	{
-		LOGGER.setLevel(Level.FINER);
 		LOGGER.setUseParentHandlers(false);
 		LOGGER.addHandler(new LoggerHandler());
+	}
+	
+	public static void setLoggerLevel(Level level)
+	{
+		LOGGER.setLevel(level);
 	}
 	
 	private void startServerSocket()

@@ -8,7 +8,7 @@ public interface PlayerAdapter
 	
 	void resetGameAndPlayer();
 	
-	void sendGameStartMessage(Stream<Player> players);
+	void sendGameStartMessage(Stream<Player> players, boolean secretImages);
 	
 	void sendRoleAssignmentMessage(Role role);
 	

@@ -13,6 +13,7 @@ public class Main
 	{
 		Server.configureLogger();
 		if(!ServerProperties.tryToLoadProperties()) return;
+		Server.setLoggerLevel(ServerProperties.LOGGING_LEVEL);
 		
 		looper = new Looper();
 		runLooper();

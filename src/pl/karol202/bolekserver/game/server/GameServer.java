@@ -28,6 +28,8 @@ public class GameServer implements Target, GameListener
 	private Looper looper;
 	private String name;
 	private int serverCode;
+	private boolean secretImages;
+	
 	private List<User> users;
 	private Game game;
 	private List<Message> messages;
@@ -105,11 +107,23 @@ public class GameServer implements Target, GameListener
 	{
 		users.forEach(u -> u.setReady(false));
 		List<Player> players = users.stream().map(u -> new Player(u, u.getAdapter())).collect(Collectors.toList());
-		game = new Game(looper, players);
+		game = new Game(looper, players, secretImages);
 		game.setGameListener(this);
 		game.addActionAndReturnImmediately(new GameActionStartGame());
 		
 		Server.LOGGER.info("Game started on server " + serverCode);
+	}
+	
+	void sendMessage(User sender, String message)
+	{
+		if(!users.contains(sender)) return;
+		messages.add(new Message(sender, message));
+		broadcastMessage(sender, message);
+	}
+	
+	void setSecretOption(String secretOption, int secretValue)
+	{
+		if(secretOption.equals("IMAGES")) secretImages = secretValue == 1;
 	}
 	
 	@Override
@@ -127,13 +141,6 @@ public class GameServer implements Target, GameListener
 	{
 		sendUsersUpdate(player.getUser());
 		sendServerStatus(player.getUser());
-	}
-	
-	void sendMessage(User sender, String message)
-	{
-		if(!users.contains(sender)) return;
-		messages.add(new Message(sender, message));
-		broadcastMessage(sender, message);
 	}
 	
 	
@@ -195,6 +202,11 @@ public class GameServer implements Target, GameListener
 	public int getServerCode()
 	{
 		return serverCode;
+	}
+	
+	public boolean isGameStarted()
+	{
+		return game != null;
 	}
 	
 	public void setServerListener(ServerListener serverListener)

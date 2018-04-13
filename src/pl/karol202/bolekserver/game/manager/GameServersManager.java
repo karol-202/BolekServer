@@ -54,6 +54,13 @@ public class GameServersManager implements Target
 		return servers.stream().filter(s -> s.getServerCode() == serverCode).findAny().orElse(null);
 	}
 	
+	ServersData getServersData()
+	{
+		int activeServers = 0;
+		for(GameServer server : servers) if(server.isGameStarted()) activeServers++;
+		return new ServersData(servers.size(), activeServers);
+	}
+	
 	private int getUniqueServerCode()
 	{
 		Random random = new Random();

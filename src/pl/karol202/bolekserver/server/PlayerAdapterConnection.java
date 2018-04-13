@@ -29,7 +29,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendGameStartMessage(Stream<Player> players)
+	public void sendGameStartMessage(Stream<Player> players, boolean secretImages)
 	{
 		OutputPacketGameStart packet = new OutputPacketGameStart();
 		players.forEach(p -> packet.addPlayer(p.getName()));

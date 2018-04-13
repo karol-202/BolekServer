@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
 
 public class ServerProperties
 {
@@ -12,6 +13,7 @@ public class ServerProperties
 	public static int SERVER_PORT;
 	public static int MAX_SERVERS;
 	public static boolean DEBUG;
+	public static Level LOGGING_LEVEL;
 	
 	static boolean tryToLoadProperties()
 	{
@@ -32,8 +34,9 @@ public class ServerProperties
 		InputStream inputStream = new FileInputStream(PROPERTIES_FILE);
 		Properties properties = new Properties();
 		properties.load(inputStream);
-		SERVER_PORT = Integer.parseInt(properties.getProperty("SERVER_PORT"));
-		MAX_SERVERS = Integer.parseInt(properties.getProperty("MAX_SERVERS"));
-		DEBUG = Boolean.parseBoolean(properties.getProperty("DEBUG"));
+		SERVER_PORT = Integer.parseInt(properties.getProperty("SERVER_PORT", "60606"));
+		MAX_SERVERS = Integer.parseInt(properties.getProperty("MAX_SERVERS", "10"));
+		DEBUG = Boolean.parseBoolean(properties.getProperty("DEBUG", "false"));
+		LOGGING_LEVEL = Level.parse(properties.getProperty("LOGGING_LEVEL", "INFO"));
 	}
 }
