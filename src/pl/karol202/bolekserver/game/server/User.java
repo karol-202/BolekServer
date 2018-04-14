@@ -3,6 +3,7 @@ package pl.karol202.bolekserver.game.server;
 import pl.karol202.bolekserver.server.Connection;
 import pl.karol202.bolekserver.server.UserAdapterConnection;
 import pl.karol202.bolekserver.server.UserAdapterConnectionAPI3;
+import pl.karol202.bolekserver.server.UserAdapterConnectionAPI4;
 
 import java.util.stream.Stream;
 
@@ -28,6 +29,7 @@ public class User
 		case 1:
 		case 2: return new UserAdapterConnection(connection);
 		case 3: return new UserAdapterConnectionAPI3(connection);
+		case 4: return new UserAdapterConnectionAPI4(connection);
 		}
 		return null;
 	}

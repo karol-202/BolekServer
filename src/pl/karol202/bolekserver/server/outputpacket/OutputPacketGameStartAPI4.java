@@ -7,7 +7,7 @@ import java.util.List;
 
 public class OutputPacketGameStartAPI4 implements OutputPacket
 {
-	private final int SECRET_IMAGES_CODE = 1;//TODO Set code
+	private static final byte[] SECRET_IMAGES_CODE = { 48, -120, 18, 9, -58, 111, -107, 100, 17, -123, 81, -65, 86, 102, 31, -117 };
 	
 	private List<String> players;
 	private boolean secretImages;
@@ -23,7 +23,9 @@ public class OutputPacketGameStartAPI4 implements OutputPacket
 	{
 		bundle.putInt("players", players.size());
 		for(int i = 0; i < players.size(); i++) bundle.putString("player" + i, players.get(i));
-		bundle.putInt("secretImages", secretImages ? SECRET_IMAGES_CODE : 0);
+		bundle.putInt("imagesCodeLength", secretImages ? SECRET_IMAGES_CODE.length : 0);
+		if(secretImages) for(int i = 0; i < SECRET_IMAGES_CODE.length; i++)
+			bundle.putInt("imagesCode" + i, SECRET_IMAGES_CODE[i]);
 	}
 	
 	@Override
