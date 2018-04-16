@@ -6,25 +6,22 @@ import pl.karol202.bolekserver.server.*;
 
 import java.util.stream.Stream;
 
-public class Player
+public class Player extends Participant
 {
-	private User user;
-	private PlayerAdapter adapter;
 	private Role role;
 	private boolean checked;
 	
-	public Player(User user, UserAdapter adapter)
+	Player(User user, UserAdapter adapter)
 	{
-		this.user = user;
-		
-		if(adapter instanceof UserAdapterConnection)
-			this.adapter = createPlayerAdapter((UserAdapterConnection) adapter);
+		super(user, createPlayerAdapterConnection(adapter));
 	}
 	
-	private PlayerAdapter createPlayerAdapter(UserAdapterConnection userAdapter)
+	static PlayerAdapter createPlayerAdapterConnection(UserAdapter userAdapter)
 	{
-		Connection connection = userAdapter.getConnection();
-		int api = userAdapter.getAPIVersion();
+		if(!(userAdapter instanceof UserAdapterConnection)) return null;
+		UserAdapterConnection userAdapterConnection = (UserAdapterConnection) userAdapter;
+		Connection connection = userAdapterConnection.getConnection();
+		int api = userAdapterConnection.getAPIVersion();
 		switch(api)
 		{
 		case 1:
@@ -37,222 +34,77 @@ public class Player
 	
 	void init(Game game)
 	{
-		adapter.setGameAndPlayer(game, this);
+		getAdapter().setGameAndPlayer(game, this);
+	}
+	
+	void reset()
+	{
+		getAdapter().resetGameAndPlayer();
+	}
+	
+	void sendRoleAssignmentMessage(Role role)
+	{
+		getAdapter().sendRoleAssignmentMessage(role);
+	}
+	
+	void sendPrimeMinisterChooseRequest(boolean update, Stream<Player> candidates)
+	{
+		getAdapter().sendPrimeMinisterChooseRequest(update, candidates);
+	}
+	
+	void sendPrimeMinisterVotingRequest()
+	{
+		getAdapter().sendPrimeMinisterVotingRequest();
+	}
+	
+	void sendChooseActsRequestToPresident(Act[] acts)
+	{
+		getAdapter().sendChooseActsRequestToPresident(acts);
+	}
+	
+	void sendChooseActsRequestToPrimeMinister(Act[] acts)
+	{
+		getAdapter().sendChooseActsRequestToPrimeMinister(acts);
+	}
+	
+	void sendChooseActsOrVetoRequestToPrimeMinister(Act[] acts)
+	{
+		getAdapter().sendChooseActsOrVetoRequestToPrimeMinister(acts);
+	}
+	
+	void sendWinMessage(boolean ministers, WinCause cause)
+	{
+		getAdapter().sendWinMessage(ministers, cause, role);
+	}
+	
+	void sendPlayerCheckRequestToPresident(boolean update, Stream<Player> checkablePlayers)
+	{
+		getAdapter().sendPlayerCheckRequestToPresident(update, checkablePlayers);
+	}
+	
+	void sendPlayerOrActsCheckingChooseRequestToPresident()
+	{
+		getAdapter().sendPlayerOrActsCheckingChooseRequestToPresident();
+	}
+	
+	void sendChoosePresidentRequestToPresident(boolean update, Stream<Player> availablePlayers)
+	{
+		getAdapter().sendChoosePresidentRequestToPresident(update, availablePlayers);
+	}
+	
+	void sendLustrationRequestToPresident(boolean update, Stream<Player> availablePlayers)
+	{
+		getAdapter().sendLustrationRequestToPresident(update, availablePlayers);
+	}
+	
+	void sendYouAreLustratedMessage()
+	{
+		getAdapter().sendYouAreLustratedMessage();
 	}
 	
 	void assignRole(Role role)
 	{
 		if(this.role == null) this.role = role;
-	}
-	
-	void sendGameStartMessage(Stream<Player> players, boolean secretImages)
-	{
-		adapter.sendGameStartMessage(players, secretImages);
-	}
-	
-	void sendRoleAssignmentMessage(Role role)
-	{
-		adapter.sendRoleAssignmentMessage(role);
-	}
-	
-	void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek)
-	{
-		adapter.sendCollaboratorsRevealmentMessage(ministers, collaborators, bolek);
-	}
-	
-	void sendStackRefillMessage(int totalActs)
-	{
-		adapter.sendStackRefillMessage(totalActs);
-	}
-	
-	void sendPresidentAssignmentMessage(Player player)
-	{
-		adapter.sendPresidentAssignmentMessage(player);
-	}
-	
-	void sendPrimeMinisterChooseRequest(boolean update, Stream<Player> candidates)
-	{
-		adapter.sendPrimeMinisterChooseRequest(update, candidates);
-	}
-	
-	void sendPrimeMinisterChosenMessage(Player player)
-	{
-		adapter.sendPrimeMinisterChosenMessage(player);
-	}
-	
-	void sendPrimeMinisterVotingRequest()
-	{
-		adapter.sendPrimeMinisterVotingRequest();
-	}
-	
-	void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed)
-	{
-		adapter.sendVotingResultMessage(upvoters, totalVotes, passed);
-	}
-	
-	void sendPrimeMinisterAssignmentMessage(Player player)
-	{
-		adapter.sendPrimeMinisterAssignmentMessage(player);
-	}
-	
-	void sendPollIndexChangeMessage(int pollIndex)
-	{
-		adapter.sendPollIndexChangeMessage(pollIndex);
-	}
-	
-	void sendRandomActMessage()
-	{
-		adapter.sendRandomActMessage();
-	}
-	
-	void sendChooseActsRequestToPresident(Act[] acts)
-	{
-		adapter.sendChooseActsRequestToPresident(acts);
-	}
-	
-	void sendPresidentChoosingActsMessage()
-	{
-		adapter.sendPresidentChoosingActsMessage();
-	}
-	
-	void sendChooseActsRequestToPrimeMinister(Act[] acts)
-	{
-		adapter.sendChooseActsRequestToPrimeMinister(acts);
-	}
-	
-	void sendChooseActsOrVetoRequestToPrimeMinister(Act[] acts)
-	{
-		adapter.sendChooseActsOrVetoRequestToPrimeMinister(acts);
-	}
-	
-	void sendPrimeMinisterChoosingActsMessage()
-	{
-		adapter.sendPrimeMinisterChoosingActsMessage();
-	}
-	
-	void sendVetoRequest()
-	{
-		adapter.sendVetoRequest();
-	}
-	
-	void sendVetoResponseMessage(boolean accepted)
-	{
-		adapter.sendVetoResponseMessage(accepted);
-	}
-	
-	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed)
-	{
-		adapter.sendActPassedMessage(lustrationPassed, antilustrationPassed);
-	}
-	
-	void sendWinMessage(WinCause cause)
-	{
-		adapter.sendWinMessage(cause);
-	}
-	
-	void sendLossMessage(WinCause cause)
-	{
-		adapter.sendLossMessage(cause);
-	}
-	
-	void sendPresidentCheckingPlayerMessage()
-	{
-		adapter.sendPresidentCheckingPlayerMessage();
-	}
-	
-	void sendPlayerCheckRequestToPresident(boolean update, Stream<Player> checkablePlayers)
-	{
-		adapter.sendPlayerCheckRequestToPresident(update, checkablePlayers);
-	}
-	
-	void sendPlayerCheckingResultToPresident(int result)
-	{
-		adapter.sendPlayerCheckingResultToPresident(result);
-	}
-	
-	void sendPresidentCheckedPlayerMessage(Player checkedPlayer)
-	{
-		adapter.sendPresidentCheckedPlayerMessage(checkedPlayer);
-	}
-	
-	void sendPresidentCheckingPlayerOrActsMessage()
-	{
-		adapter.sendPresidentCheckingPlayerOrActsMessage();
-	}
-	
-	void sendPlayerOrActsCheckingChooseRequestToPresident()
-	{
-		adapter.sendPlayerOrActsCheckingChooseRequestToPresident();
-	}
-	
-	void sendActsCheckingResultMessageToPresident(Act[] acts)
-	{
-		adapter.sendActsCheckingResultMessageToPresident(acts);
-	}
-	
-	void sendPresidentCheckedActsMessage()
-	{
-		adapter.sendPresidentCheckedActsMessage();
-	}
-	
-	void sendPresidentChoosingPresidentMessage()
-	{
-		adapter.sendPresidentChoosingPresidentMessage();
-	}
-	
-	void sendChoosePresidentRequestToPresident(boolean update, Stream<Player> availablePlayers)
-	{
-		adapter.sendChoosePresidentRequestToPresident(update, availablePlayers);
-	}
-	
-	void sendPresidentLustratingMessage()
-	{
-		adapter.sendPresidentLustratingMessage();
-	}
-	
-	void sendLustrationRequestToPresident(boolean update, Stream<Player> availablePlayers)
-	{
-		adapter.sendLustrationRequestToPresident(update, availablePlayers);
-	}
-	
-	void sendYouAreLustratedMessage()
-	{
-		adapter.sendYouAreLustratedMessage();
-	}
-	
-	void sendPresidentLustratedMessage(Player player, boolean bolek)
-	{
-		adapter.sendPresidentLustratedMessage(player, bolek);
-	}
-	
-	void sendGameExitedMessage()
-	{
-		adapter.sendGameExitedMessage();
-	}
-	
-	void sendPlayersUpdatedMessage(Stream<Player> players)
-	{
-		adapter.sendPlayersUpdatedMessage(players);
-	}
-	
-	void sendTooFewPlayers()
-	{
-		adapter.sendTooFewPlayersMessage();
-	}
-	
-	void reset()
-	{
-		adapter.resetGameAndPlayer();
-	}
-	
-	public User getUser()
-	{
-		return user;
-	}
-	
-	public String getName()
-	{
-		return user.getName();
 	}
 	
 	Role getRole()

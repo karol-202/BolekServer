@@ -177,17 +177,11 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendWinMessage(WinCause cause)
+	public void sendWinMessage(boolean ministers, WinCause cause, Role role)
 	{
-		OutputPacketWin packet = new OutputPacketWin(cause);
-		connection.sendPacket(packet);
-	}
-	
-	@Override
-	public void sendLossMessage(WinCause cause)
-	{
-		OutputPacketLoss packet = new OutputPacketLoss(cause);
-		connection.sendPacket(packet);
+		if((ministers && role == Role.MINISTER) || (!ministers && role != Role.MINISTER))
+			connection.sendPacket(new OutputPacketWin(cause));
+		else connection.sendPacket(new OutputPacketLoss(cause));
 	}
 	
 	@Override

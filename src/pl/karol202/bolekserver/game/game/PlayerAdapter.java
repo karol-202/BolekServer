@@ -48,9 +48,7 @@ public interface PlayerAdapter
 	
 	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed);
 	
-	void sendWinMessage(WinCause cause);
-	
-	void sendLossMessage(WinCause cause);
+	void sendWinMessage(boolean ministers, WinCause cause, Role role);
 	
 	void sendPresidentCheckingPlayerMessage();
 	

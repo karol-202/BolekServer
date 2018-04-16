@@ -756,8 +756,7 @@ public class Game implements Target
 	private void broadcastMinistersWin(WinCause cause)
 	{
 		players.forEach(p -> {
-			if(p.isMinister()) p.sendWinMessage(cause);
-			else p.sendLossMessage(cause);
+			p.sendWinMessage(true, cause);
 			p.reset();
 		});
 	}
@@ -765,8 +764,7 @@ public class Game implements Target
 	private void broadcastCollaboratorsWin(WinCause cause)
 	{
 		players.forEach(p -> {
-			if(!p.isMinister()) p.sendWinMessage(cause);
-			else p.sendLossMessage(cause);
+			p.sendWinMessage(false, cause);
 			p.reset();
 		});
 	}
