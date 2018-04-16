@@ -1,6 +1,6 @@
 package pl.karol202.bolekserver.server;
 
-public class UserAdapterConnectionAPI4 extends UserAdapterConnection
+public class UserAdapterConnectionAPI4 extends UserAdapterConnectionAPI3
 {
 	public UserAdapterConnectionAPI4(Connection connection)
 	{

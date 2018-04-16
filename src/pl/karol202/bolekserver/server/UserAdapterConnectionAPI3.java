@@ -6,7 +6,7 @@ import pl.karol202.bolekserver.server.outputpacket.OutputPacketUsersUpdateAPI3;
 
 import java.util.stream.Stream;
 
-public class UserAdapterConnectionAPI3 extends UserAdapterConnection
+public class UserAdapterConnectionAPI3 extends UserAdapterConnectionAPI2
 {
 	public UserAdapterConnectionAPI3(Connection connection)
 	{
