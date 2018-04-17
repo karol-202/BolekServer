@@ -6,7 +6,9 @@ public interface PlayerAdapter
 {
 	void setGameAndPlayer(Game game, Player player);
 	
-	void resetGameAndPlayer();
+	void setGameAndSpectator(Game game, Spectator spectator);
+	
+	void resetAll();
 	
 	void sendGameStartMessage(Stream<Player> players, boolean secretImages);
 	

@@ -20,13 +20,13 @@ public class PlayerAdapterConnectionAPI4 extends PlayerAdapterConnectionAPI3
 	{
 		OutputPacketGameStartAPI4 packet = new OutputPacketGameStartAPI4(secretImages);
 		players.forEach(p -> packet.addPlayer(p.getName()));
-		connection.sendPacket(packet);
+		connection.applyPacket(packet);
 	}
 	
 	@Override
 	public void sendWinMessage(boolean ministers, WinCause cause, Role role)
 	{
 		OutputPacketWinAPI4 packet = new OutputPacketWinAPI4(ministers, cause);
-		connection.sendPacket(packet);
+		connection.applyPacket(packet);
 	}
 }

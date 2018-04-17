@@ -6,6 +6,7 @@ import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.server.Utils;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -20,8 +21,10 @@ public class Game implements Target
 	private static final int MIN_PLAYERS = 2;
 	
 	private Looper looper;
+	private List<Consumer<Participant>> events;
 	private List<Player> players;
 	private List<Player> initialPlayers;
+	private List<Spectator> spectators;
 	private boolean secretImages;
 	private boolean gameEnd;
 	private boolean nextTurn;
@@ -62,9 +65,11 @@ public class Game implements Target
 	public Game(Looper looper, List<Player> players, boolean secretImages)
 	{
 		this.looper = looper;
+		this.events = new ArrayList<>();
 		this.players = new ArrayList<>(players);
 		this.players.forEach(p -> p.init(this));
 		this.initialPlayers = new ArrayList<>(players);
+		this.spectators = new ArrayList<>();
 		this.secretImages = secretImages;
 		this.incomingActs = new Stack<>();
 	}
@@ -633,7 +638,7 @@ public class Game implements Target
 	
 	private void broadcastGameStart()
 	{
-		players.forEach(p -> p.sendGameStartMessage(players.stream(), secretImages));
+		fireEvent(p -> p.sendGameStartMessage(players.stream(), secretImages));
 	}
 	
 	private void sendRoleAssignmentMessages()
@@ -861,6 +866,13 @@ public class Game implements Target
 	private void broadcastTooFewPlayersMessage()
 	{
 		players.forEach(Player::sendTooFewPlayers);
+	}
+	
+	private void fireEvent(Consumer<Participant> event)
+	{
+		events.add(event);
+		players.forEach(event);
+		spectators.forEach(event);
 	}
 	
 	public <R> R addActionAndWaitForResult(GameAction<R> action)

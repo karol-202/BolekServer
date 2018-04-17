@@ -4,7 +4,7 @@ import pl.karol202.bolekserver.game.server.User;
 
 import java.util.stream.Stream;
 
-public class Participant
+public abstract class Participant
 {
 	private User user;
 	private PlayerAdapter adapter;

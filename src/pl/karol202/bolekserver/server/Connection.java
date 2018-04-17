@@ -3,6 +3,7 @@ package pl.karol202.bolekserver.server;
 import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.game.GameActionExitGame;
 import pl.karol202.bolekserver.game.game.Player;
+import pl.karol202.bolekserver.game.game.Spectator;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.game.server.GameServer;
 import pl.karol202.bolekserver.game.server.ServerActionRemoveUser;
@@ -17,7 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class Connection
+public class Connection implements PacketConsumer
 {
 	private static final boolean PING_ENABLE = true;
 	private static final int MAX_UNANSWERED_PINGS = 5;
@@ -28,6 +29,7 @@ public class Connection
 	private Game game;
 	private User user;
 	private Player player;
+	private Spectator spectator;
 	private int unansweredPings;
 	
 	private Socket socket;
@@ -123,8 +125,14 @@ public class Connection
 		else if(packet instanceof InputGamePacket && game != null)
 			((InputGamePacket) packet).execute(this, game);
 	}
-	
-	public void sendPacket(OutputPacket packet)
+
+	@Override
+	public void applyPacket(OutputPacket packet)
+	{
+		sendPacket(packet);
+	}
+
+	private void sendPacket(OutputPacket packet)
 	{
 		if(!isConnected()) return;
 		try
@@ -246,7 +254,18 @@ public class Connection
 	{
 		this.player = player;
 	}
-	
+
+	public Spectator getSpectator()
+	{
+		return spectator;
+	}
+
+	@Override
+	public void setSpectator(Spectator spectator)
+	{
+		this.spectator = spectator;
+	}
+
 	private void exception(String message, Exception exception)
 	{
 		new ServerException(message, exception).printStackTrace();

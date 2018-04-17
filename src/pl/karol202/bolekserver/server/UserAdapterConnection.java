@@ -26,7 +26,7 @@ public class UserAdapterConnection implements UserAdapter
 	@Override
 	public void sendLoggedInMessage(String serverName, int serverCode)
 	{
-		connection.sendPacket(new OutputPacketLoggedIn(serverName, serverCode));
+		connection.applyPacket(new OutputPacketLoggedIn(serverName, serverCode));
 	}
 	
 	@Override
@@ -34,19 +34,19 @@ public class UserAdapterConnection implements UserAdapter
 	{
 		OutputPacketUsersUpdate packet = new OutputPacketUsersUpdate();
 		users.forEach(u -> packet.addUser(u.getName(), u.isReady()));
-		connection.sendPacket(packet);
+		connection.applyPacket(packet);
 	}
 	
 	@Override
 	public void sendServerStatusMessage(boolean gameAvailable)
 	{
-		connection.sendPacket(new OutputPacketServerStatus(gameAvailable));
+		connection.applyPacket(new OutputPacketServerStatus(gameAvailable));
 	}
 	
 	@Override
 	public void sendMessage(User sender, String message, boolean newMessage)
 	{
-		connection.sendPacket(new OutputPacketMessage(sender.getName(), message));
+		connection.applyPacket(new OutputPacketMessage(sender.getName(), message));
 	}
 	
 	public Connection getConnection()

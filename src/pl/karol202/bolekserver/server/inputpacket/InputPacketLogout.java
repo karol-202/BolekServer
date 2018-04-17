@@ -19,10 +19,10 @@ public class InputPacketLogout implements InputServerPacket
 		connection.tryToExitGame();
 		boolean result = connection.getUser() != null &&
 						 server.addActionAndWaitForResult(new ServerActionRemoveUser(connection.getUser()));
-		if(result) connection.sendPacket(new OutputPacketLoggedOut());
+		if(result) connection.applyPacket(new OutputPacketLoggedOut());
 		else
 		{
-			connection.sendPacket(new OutputPacketFailure());
+			connection.applyPacket(new OutputPacketFailure());
 			return;
 		}
 		

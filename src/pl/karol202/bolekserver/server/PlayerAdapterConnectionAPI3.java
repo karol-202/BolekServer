@@ -18,6 +18,6 @@ public class PlayerAdapterConnectionAPI3 extends PlayerAdapterConnection
 		OutputPacketCollaboratorsRevealmentAPI3 packet = new OutputPacketCollaboratorsRevealmentAPI3(bolek.getName());
 		ministers.forEach(p -> packet.addMinister(p.getName()));
 		collaborators.forEach(p -> packet.addCollaborator(p.getName()));
-		connection.sendPacket(packet);
+		connection.applyPacket(packet);
 	}
 }

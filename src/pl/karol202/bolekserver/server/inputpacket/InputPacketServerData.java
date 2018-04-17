@@ -17,6 +17,6 @@ public class InputPacketServerData implements InputControlPacket
 	public void execute(Connection connection, GameServersManager manager)
 	{
 		ServersData data = manager.addActionAndWaitForResult(new ConnectionActionServerData());
-		connection.sendPacket(new OutputPacketServerDataAPI4(data));
+		connection.applyPacket(new OutputPacketServerDataAPI4(data));
 	}
 }

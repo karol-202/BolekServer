@@ -22,6 +22,6 @@ public class InputPacketChoosePlayerOrActsCheckingPresident implements InputGame
 	{
 		Player sender = connection.getPlayer();
 		boolean result = game.addActionAndWaitForResult(new GameActionChoosePlayerOrActsCheckingByPresident(sender, choice));
-		if(!result) connection.sendPacket(new OutputPacketFailure());
+		if(!result) connection.applyPacket(new OutputPacketFailure());
 	}
 }

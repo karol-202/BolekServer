@@ -9,4 +9,14 @@ public class Spectator extends Participant
 	{
 		super(user, Player.createPlayerAdapterConnection(adapter));
 	}
+	
+	void init(Game game)
+	{
+		getAdapter().setGameAndSpectator(game, this);
+	}
+	
+	void reset()
+	{
+		getAdapter().resetAll();
+	}
 }

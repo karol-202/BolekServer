@@ -23,8 +23,8 @@ public class InputPacketCheckPlayerPresident implements InputGamePacket
 		Player sender = connection.getPlayer();
 		Game.UserChoosingError result = game.addActionAndWaitForResult(new GameActionCheckPlayerByPresident(sender, checkedPlayer));
 		if(result == Game.UserChoosingError.ERROR)
-			connection.sendPacket(new OutputPacketFailure());
+			connection.applyPacket(new OutputPacketFailure());
 		else if(result == Game.UserChoosingError.INVALID_USER)
-			connection.sendPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_INVALID_USER));
+			connection.applyPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_INVALID_USER));
 	}
 }
