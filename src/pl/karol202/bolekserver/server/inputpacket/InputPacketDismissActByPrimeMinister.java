@@ -23,6 +23,6 @@ public class InputPacketDismissActByPrimeMinister implements InputGamePacket
 	{
 		Player sender = connection.getPlayer();
 		boolean result = game.addActionAndWaitForResult(new GameActionDismissActByPrimeMinister(sender, act));
-		if(!result) connection.applyPacket(new OutputPacketFailure());
+		if(!result) connection.sendPacket(new OutputPacketFailure());
 	}
 }

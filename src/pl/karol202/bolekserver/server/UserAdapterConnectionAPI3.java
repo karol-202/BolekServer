@@ -24,12 +24,12 @@ public class UserAdapterConnectionAPI3 extends UserAdapterConnectionAPI2
 	{
 		OutputPacketUsersUpdateAPI3 packet = new OutputPacketUsersUpdateAPI3();
 		users.forEach(u -> packet.addUser(u.getName(), u.isReady(), u.getAddress()));
-		connection.applyPacket(packet);
+		connection.sendPacket(packet);
 	}
 	
 	@Override
 	public void sendMessage(User sender, String message, boolean newMessage)
 	{
-		connection.applyPacket(new OutputPacketMessageAPI3(sender.getName(), message, newMessage));
+		connection.sendPacket(new OutputPacketMessageAPI3(sender.getName(), message, newMessage));
 	}
 }

@@ -14,9 +14,4 @@ public class Spectator extends Participant
 	{
 		getAdapter().setGameAndSpectator(game, this);
 	}
-	
-	void reset()
-	{
-		getAdapter().resetAll();
-	}
 }

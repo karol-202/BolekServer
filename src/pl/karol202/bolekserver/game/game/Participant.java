@@ -14,7 +14,12 @@ public abstract class Participant
 		this.user = user;
 		this.adapter = adapter;
 	}
-	
+
+	void reset()
+	{
+		getAdapter().resetAll();
+	}
+
 	void sendGameStartMessage(Stream<Player> players, boolean secretImages)
 	{
 		adapter.sendGameStartMessage(players, secretImages);

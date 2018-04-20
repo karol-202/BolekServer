@@ -23,8 +23,8 @@ public class InputPacketSetPrimeMinister implements InputGamePacket
 		Player sender = connection.getPlayer();
 		Game.UserChoosingError result = game.addActionAndWaitForResult(new GameActionChoosePrimeMinister(sender, primeMinister));
 		if(result == Game.UserChoosingError.ERROR)
-			connection.applyPacket(new OutputPacketFailure());
+			connection.sendPacket(new OutputPacketFailure());
 		else if(result == Game.UserChoosingError.INVALID_USER)
-			connection.applyPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_INVALID_USER));
+			connection.sendPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_INVALID_USER));
 	}
 }

@@ -25,7 +25,7 @@ public class Player extends Participant
 		switch(api)
 		{
 		case 1:
-		case 2: return new PacketPlayerAdapter(connection);
+		case 2: return new PlayerAdapterConnection(connection);
 		case 3: return new PlayerAdapterConnectionAPI3(connection);
 		case 4: return new PlayerAdapterConnectionAPI4(connection);
 		}
@@ -35,11 +35,6 @@ public class Player extends Participant
 	void init(Game game)
 	{
 		getAdapter().setGameAndPlayer(game, this);
-	}
-	
-	void reset()
-	{
-		getAdapter().resetAll();
 	}
 	
 	void sendRoleAssignmentMessage(Role role)

@@ -29,7 +29,7 @@ public class InputPacketCreateServer implements InputControlPacket
 	{
 		if(connection.isGameServerSet() || connection.isGameSet())
 		{
-			connection.applyPacket(new OutputPacketFailure());
+			connection.sendPacket(new OutputPacketFailure());
 			return;
 		}
 		
@@ -37,7 +37,7 @@ public class InputPacketCreateServer implements InputControlPacket
 		GameServer server = manager.addActionAndWaitForResult(new ConnectionActionCreateServer(name, scError));
 		if(server == null)
 		{
-			connection.applyPacket(new OutputPacketFailure(getServerCreationProblemCode(scError.getError())));
+			connection.sendPacket(new OutputPacketFailure(getServerCreationProblemCode(scError.getError())));
 			return;
 		}
 		
@@ -46,7 +46,7 @@ public class InputPacketCreateServer implements InputControlPacket
 		boolean result = server.addActionAndWaitForResult(new ServerActionAddUser(user, uaError));
 		if(!result)
 		{
-			connection.applyPacket(new OutputPacketFailure(getUserAddingProblemCode(uaError.getError())));
+			connection.sendPacket(new OutputPacketFailure(getUserAddingProblemCode(uaError.getError())));
 			return;
 		}
 		connection.setGameServer(server);

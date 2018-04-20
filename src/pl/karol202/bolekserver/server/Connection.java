@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class Connection implements PacketConsumer
+public class Connection
 {
 	private static final boolean PING_ENABLE = true;
 	private static final int MAX_UNANSWERED_PINGS = 5;
@@ -105,8 +105,9 @@ public class Connection implements PacketConsumer
 		int length = Utils.readInt(inputStream);
 		if(length <= 0) return null;
 		byte[] bytes = new byte[length];
-		int bytesRead = inputStream.read(bytes);
-		if(bytesRead != length) return null;
+		int bytesRead = 0;
+		while(bytesRead != length)
+			bytesRead += inputStream.read(bytes, bytesRead, length - bytesRead);
 		
 		InputPacket packet = InputPacketFactory.createPacket(bytes);
 		if(packet == null) Server.LOGGER.warning("Packet received: corrupted");
@@ -126,13 +127,7 @@ public class Connection implements PacketConsumer
 			((InputGamePacket) packet).execute(this, game);
 	}
 
-	@Override
-	public void applyPacket(OutputPacket packet)
-	{
-		sendPacket(packet);
-	}
-
-	private void sendPacket(OutputPacket packet)
+	public void sendPacket(OutputPacket packet)
 	{
 		if(!isConnected()) return;
 		try
@@ -260,7 +255,6 @@ public class Connection implements PacketConsumer
 		return spectator;
 	}
 
-	@Override
 	public void setSpectator(Spectator spectator)
 	{
 		this.spectator = spectator;

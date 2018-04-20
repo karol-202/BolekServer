@@ -29,14 +29,14 @@ public class InputPacketLogin implements InputControlPacket
 	{
 		if(connection.isGameServerSet() || connection.isGameSet())
 		{
-			connection.applyPacket(new OutputPacketFailure());
+			connection.sendPacket(new OutputPacketFailure());
 			return;
 		}
 		
 		GameServer server = manager.addActionAndWaitForResult(new ConnectionActionFindServer(serverCode));
 		if(server == null)
 		{
-			connection.applyPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_SERVER_CODE_INVALID));
+			connection.sendPacket(new OutputPacketFailure(OutputPacketFailure.PROBLEM_SERVER_CODE_INVALID));
 			return;
 		}
 		
@@ -45,7 +45,7 @@ public class InputPacketLogin implements InputControlPacket
 		boolean result = server.addActionAndWaitForResult(new ServerActionAddUser(user, error));
 		if(!result)
 		{
-			connection.applyPacket(new OutputPacketFailure(getUserAddingProblemCode(error.getError())));
+			connection.sendPacket(new OutputPacketFailure(getUserAddingProblemCode(error.getError())));
 			return;
 		}
 		connection.setGameServer(server);
