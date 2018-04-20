@@ -2,6 +2,7 @@ package pl.karol202.bolekserver.game.game;
 
 import pl.karol202.bolekserver.game.server.User;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class Participant
@@ -25,7 +26,7 @@ public abstract class Participant
 		adapter.sendGameStartMessage(players, secretImages);
 	}
 	
-	void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek)
+	void sendCollaboratorsRevealmentMessage(List<Player> ministers, List<Player> collaborators, Player bolek)
 	{
 		adapter.sendCollaboratorsRevealmentMessage(ministers, collaborators, bolek);
 	}
@@ -45,7 +46,7 @@ public abstract class Participant
 		adapter.sendPrimeMinisterChosenMessage(player);
 	}
 	
-	void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed)
+	void sendVotingResultMessage(List<Player> upvoters, int totalVotes, boolean passed)
 	{
 		adapter.sendVotingResultMessage(upvoters, totalVotes, passed);
 	}

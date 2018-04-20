@@ -5,7 +5,7 @@ import pl.karol202.bolekserver.game.server.UserAdapter;
 
 public class Spectator extends Participant
 {
-	Spectator(User user, UserAdapter adapter)
+	public Spectator(User user, UserAdapter adapter)
 	{
 		super(user, Player.createPlayerAdapterConnection(adapter));
 	}
@@ -13,5 +13,10 @@ public class Spectator extends Participant
 	void init(Game game)
 	{
 		getAdapter().setGameAndSpectator(game, this);
+	}
+	
+	void sendSpectatingStartMessage(boolean secretImages)
+	{
+		getAdapter().sendSpectatingStartMessage(secretImages);
 	}
 }

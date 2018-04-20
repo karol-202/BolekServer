@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Game implements Target
@@ -77,7 +78,7 @@ public class Game implements Target
 	void startGame()
 	{
 		broadcastGameStart();
-		sendPlayersUpdatedMessage();
+		broadcastPlayersUpdatedMessage();
 		assignRoles();
 		assignPresidentPosition(getRandomPlayer());
 		refillIncomingActsStack();
@@ -177,7 +178,7 @@ public class Game implements Target
 	
 	boolean voteOnPrimeMinister(Player sender, boolean vote)
 	{
-		if(!votingOnPrimeMinister || votes.containsKey(sender)) return false;
+		if(!votingOnPrimeMinister || sender == null || votes.containsKey(sender)) return false;
 		votes.put(sender, vote);
 		checkIfVotingIsEnded();
 		return true;
@@ -205,7 +206,7 @@ public class Game implements Target
 	{
 		assignPrimeMinisterPosition(votedPrimeMinister);
 		resetPollIndex();
-		if(primeMinister.isBolek() && isBolekCausingCollaboratorsWin()) collaboratorsWin(WinCause.BOLEK);
+		if(primeMinister.isBolek() && isBolekCausingCollaboratorsWin()) win(false, WinCause.BOLEK);
 		else letPresidentChooseActs();
 	}
 	
@@ -478,7 +479,7 @@ public class Game implements Target
 		broadcastPresidentLustratedMessage(player);
 		removePlayer(player);
 		
-		if(player.isBolek()) win(WinCause.BOLEK);
+		if(player.isBolek()) win(true, WinCause.BOLEK);
 		else callNextTurn();
 		return UserChoosingError.OK;
 	}
@@ -503,7 +504,7 @@ public class Game implements Target
 		else if(choosingPresident) sendChoosePresidentRequestToPresident(true);
 		else if(lustratingByPresident) sendLustrationRequestToPresident(true);
 		
-		sendPlayersUpdatedMessage();
+		broadcastPlayersUpdatedMessage();
 		
 		if(player == president) resetTurn();
 		if(votingOnPrimeMinister)
@@ -557,6 +558,22 @@ public class Game implements Target
 		if(nextTurn) return;
 		nextTurn = true;
 		addActionAndReturnImmediately(new GameActionNextTurn());
+	}
+	
+	void spectate(Spectator spectator)
+	{
+		if(spectator == null) return;
+		spectators.add(spectator);
+		
+		sendSpectatingStartMessage(spectator);
+		broadcastPlayersUpdatedMessage();
+		for(Consumer<Participant> event : events) event.accept(spectator);
+	}
+	
+	void stopSpectating(Spectator spectator)
+	{
+		if(!spectators.contains(spectator)) return;
+		spectators.remove(spectator);
 	}
 	
 	
@@ -652,14 +669,13 @@ public class Game implements Target
 	
 	private void sendCollaboratorsRevealmentMessagesTo(Predicate<Player> playersFilter)
 	{
-		Supplier<Stream<Player>> ministersSupplier = () -> initialPlayers.stream().filter(Player::isMinister);
-		Supplier<Stream<Player>> collaboratorsSupplier = () -> initialPlayers.stream().filter(Player::isCollaborator);
+		List<Player> ministers = initialPlayers.stream().filter(Player::isMinister).collect(Collectors.toList());
+		List<Player> collaborators = initialPlayers.stream().filter(Player::isCollaborator).collect(Collectors.toList());
 		Player bolek = initialPlayers.stream().filter(Player::isBolek).findAny().orElse(null);
 		if(bolek == null) return;
 		
 		fireEventWithPlayersRestriction(
-				p -> p.sendCollaboratorsRevealmentMessage(ministersSupplier.get(), collaboratorsSupplier.get(), bolek),
-				playersFilter);
+				p -> p.sendCollaboratorsRevealmentMessage(ministers, collaborators, bolek), playersFilter);
 	}
 	
 	private void broadcastStackRefill()
@@ -669,6 +685,7 @@ public class Game implements Target
 	
 	private void broadcastPresidentAssignment()
 	{
+		Player president = this.president;
 		fireEvent(p -> p.sendPresidentAssignmentMessage(president));
 	}
 	
@@ -690,18 +707,21 @@ public class Game implements Target
 	
 	private void broadcastVotingResult(boolean passed)
 	{
-		Supplier<Stream<Player>> upvotersSupplier = () -> votes.entrySet().stream().filter(Map.Entry::getValue)
-																				   .map(Map.Entry::getKey);
-		fireEvent(p -> p.sendVotingResultMessage(upvotersSupplier.get(), votes.size(), passed));
+		List<Player> upvoters = votes.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey)
+																					 .collect(Collectors.toList());
+		int totalVotes = votes.size();
+		fireEvent(p -> p.sendVotingResultMessage(upvoters, totalVotes, passed));
 	}
 	
 	private void broadcastPrimeMinisterAssignment()
 	{
+		Player primeMinister = this.primeMinister;
 		fireEvent(p -> p.sendPrimeMinisterAssignmentMessage(primeMinister));
 	}
 	
 	private void broadcastPollIndexChange()
 	{
+		int pollIndex = this.pollIndex;
 		fireEvent(p -> p.sendPollIndexChangeMessage(pollIndex));
 	}
 	
@@ -747,6 +767,8 @@ public class Game implements Target
 	
 	private void broadcastActPassed()
 	{
+		int passedLustrationActs = this.passedLustrationActs;
+		int passedAntilustrationActs = this.passedAntilustrationActs;
 		fireEvent(p -> p.sendActPassedMessage(passedLustrationActs, passedAntilustrationActs));
 	}
 	
@@ -833,23 +855,30 @@ public class Game implements Target
 	
 	private void broadcastGameExitedMessage()
 	{
-		players.forEach(Player::sendGameExitedMessage);
+		fireEvent(Participant::sendGameExitedMessage);
 	}
-	//End
+	
 	private void sendGameExitedMessage(Player player)
 	{
 		player.sendGameExitedMessage();
 	}
 	
-	private void sendPlayersUpdatedMessage()
+	private void broadcastPlayersUpdatedMessage()
 	{
 		Supplier<Stream<Player>> playersSupplier = () -> players.stream();
 		players.forEach(p -> p.sendPlayersUpdatedMessage(playersSupplier.get()));
+		spectators.forEach(s -> s.sendPlayersUpdatedMessage(playersSupplier.get()));
 	}
 	
 	private void broadcastTooFewPlayersMessage()
 	{
-		players.forEach(Player::sendTooFewPlayers);
+		players.forEach(Participant::sendTooFewPlayers);
+		spectators.forEach(Participant::sendTooFewPlayers);
+	}
+	
+	private void sendSpectatingStartMessage(Spectator spectator)
+	{
+		spectator.sendSpectatingStartMessage(secretImages);
 	}
 	
 	private void fireEvent(Consumer<Participant> event)

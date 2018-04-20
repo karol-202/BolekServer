@@ -3,6 +3,7 @@ package pl.karol202.bolekserver.server;
 import pl.karol202.bolekserver.game.game.*;
 import pl.karol202.bolekserver.server.outputpacket.*;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public class PlayerAdapterConnection implements PlayerAdapter
@@ -51,7 +52,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek)
+	public void sendCollaboratorsRevealmentMessage(List<Player> ministers, List<Player> collaborators, Player bolek)
 	{
 		OutputPacketCollaboratorsRevealment packet = new OutputPacketCollaboratorsRevealment(bolek.getName());
 		collaborators.forEach(p -> packet.addCollaborator(p.getName()));
@@ -95,7 +96,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed)
+	public void sendVotingResultMessage(List<Player> upvoters, int totalVotes, boolean passed)
 	{
 		OutputPacketVotingResult packet = new OutputPacketVotingResult(totalVotes, passed);
 		upvoters.forEach(p -> packet.addUpvoter(p.getName()));
@@ -314,4 +315,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 		OutputPacketTooFewPlayers packet = new OutputPacketTooFewPlayers();
 		connection.sendPacket(packet);
 	}
+	
+	@Override
+	public void sendSpectatingStartMessage(boolean secretImages) { }
 }

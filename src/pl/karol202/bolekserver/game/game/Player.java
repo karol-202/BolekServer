@@ -11,7 +11,7 @@ public class Player extends Participant
 	private Role role;
 	private boolean checked;
 	
-	Player(User user, UserAdapter adapter)
+	public Player(User user, UserAdapter adapter)
 	{
 		super(user, createPlayerAdapterConnection(adapter));
 	}

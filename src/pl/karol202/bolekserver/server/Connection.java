@@ -104,13 +104,14 @@ public class Connection
 	{
 		int length = Utils.readInt(inputStream);
 		if(length <= 0) return null;
+		
 		byte[] bytes = new byte[length];
 		int bytesRead = 0;
 		while(bytesRead != length)
 			bytesRead += inputStream.read(bytes, bytesRead, length - bytesRead);
 		
 		InputPacket packet = InputPacketFactory.createPacket(bytes);
-		if(packet == null) Server.LOGGER.warning("Packet received: corrupted");
+		if(packet == null) Server.LOGGER.warning("Packet received: corrupted: \n"+ new String(bytes));
 		else if(!packet.isSilent()) Server.LOGGER.fine("Packet received: " + packet.toString());
 		return packet;
 	}
@@ -196,7 +197,11 @@ public class Connection
 			Thread.sleep(PING_TIME);
 			writePacket(new OutputPacketPing());
 			unansweredPings++;
-			if(unansweredPings > MAX_UNANSWERED_PINGS) closeSocket();
+			if(unansweredPings > MAX_UNANSWERED_PINGS)
+			{
+				Server.LOGGER.warning("Closing socket due to no ping response.");
+				closeSocket();
+			}
 		}
 	}
 	

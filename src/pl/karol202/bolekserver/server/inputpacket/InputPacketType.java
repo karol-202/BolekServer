@@ -23,7 +23,9 @@ enum InputPacketType
 	EXITGAME(InputPacketExitGame::new),
 	PONG(InputPacketPong::new),
 	SERVERDATA(InputPacketServerData::new),
-	SECRETOPTION(InputPacketSecretOption::new);
+	SECRETOPTION(InputPacketSecretOption::new),
+	SPECTATE(InputPacketSpectate::new),
+	STOPSPECTATING(InputPacketStopSpectating::new);
 	
 	private Supplier<InputPacket> packetSupplier;
 	

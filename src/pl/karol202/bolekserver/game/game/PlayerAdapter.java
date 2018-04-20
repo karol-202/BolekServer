@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.game.game;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public interface PlayerAdapter
@@ -14,7 +15,7 @@ public interface PlayerAdapter
 	
 	void sendRoleAssignmentMessage(Role role);
 	
-	void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek);
+	void sendCollaboratorsRevealmentMessage(List<Player> ministers, List<Player> collaborators, Player bolek);
 	
 	void sendStackRefillMessage(int totalActs);
 	
@@ -26,7 +27,7 @@ public interface PlayerAdapter
 	
 	void sendPrimeMinisterVotingRequest();
 	
-	void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed);
+	void sendVotingResultMessage(List<Player> upvoters, int totalVotes, boolean passed);
 	
 	void sendPrimeMinisterAssignmentMessage(Player primeMinister);
 	
@@ -85,4 +86,6 @@ public interface PlayerAdapter
 	void sendPlayersUpdatedMessage(Stream<Player> player);
 	
 	void sendTooFewPlayersMessage();
+	
+	void sendSpectatingStartMessage(boolean secretImages);
 }

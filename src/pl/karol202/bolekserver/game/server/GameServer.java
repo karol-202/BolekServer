@@ -4,10 +4,7 @@ import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
-import pl.karol202.bolekserver.game.game.Game;
-import pl.karol202.bolekserver.game.game.GameActionStartGame;
-import pl.karol202.bolekserver.game.game.GameListener;
-import pl.karol202.bolekserver.game.game.Player;
+import pl.karol202.bolekserver.game.game.*;
 import pl.karol202.bolekserver.server.Server;
 
 import java.util.ArrayList;
@@ -18,7 +15,7 @@ public class GameServer implements Target, GameListener
 {
 	public enum UserAddingError
 	{
-		INVALID_NAME, TOO_MANY_USERS, USERNAME_BUSY
+		INVALID_USER, INVALID_NAME, TOO_MANY_USERS, USERNAME_BUSY
 	}
 	
 	private static final int MAX_USERNAME_LENGTH = 20;
@@ -47,6 +44,11 @@ public class GameServer implements Target, GameListener
 	
 	boolean addNewUser(User user, ErrorReference<UserAddingError> error)
 	{
+		if(user == null)
+		{
+			error.setError(UserAddingError.INVALID_USER);
+			return false;
+		}
 		String username = user.getName();
 		if(username == null || username.isEmpty() || username.length() > MAX_USERNAME_LENGTH)
 		{
@@ -112,6 +114,13 @@ public class GameServer implements Target, GameListener
 		game.addActionAndReturnImmediately(new GameActionStartGame());
 		
 		Server.LOGGER.info("Game started on server " + serverCode);
+	}
+	
+	void spectate(User user)
+	{
+		if(!users.contains(user) || game == null) return;
+		Spectator spectator = new Spectator(user, user.getAdapter());
+		game.addActionAndReturnImmediately(new GameActionSpectate(spectator));
 	}
 	
 	void sendMessage(User sender, String message)
