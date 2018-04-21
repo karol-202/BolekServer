@@ -41,9 +41,9 @@ public class User
 		adapter.sendUsersListMessage(users);
 	}
 	
-	void sendServerStatus(boolean gameAvailable)
+	void sendServerStatus(boolean gameAvailable, int minUsers)
 	{
-		adapter.sendServerStatusMessage(gameAvailable);
+		adapter.sendServerStatusMessage(gameAvailable, minUsers);
 	}
 	
 	void sendMessage(User sender, String message, boolean newMessage)

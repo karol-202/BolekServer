@@ -562,7 +562,8 @@ public class Game implements Target
 	
 	void spectate(Spectator spectator)
 	{
-		if(spectator == null) return;
+		if(spectator == null || spectators.contains(spectator)) return;
+		spectator.init(this);
 		spectators.add(spectator);
 		
 		sendSpectatingStartMessage(spectator);
@@ -774,10 +775,7 @@ public class Game implements Target
 	
 	private void broadcastWin(boolean ministers, WinCause cause)
 	{
-		fireEvent(p -> {
-			p.sendWinMessage(ministers, cause);
-			p.reset();
-		});
+		fireEvent(p -> p.sendWinMessage(ministers, cause));
 	}
 	
 	private void broadcastPresidentCheckingPlayer()
@@ -855,12 +853,13 @@ public class Game implements Target
 	
 	private void broadcastGameExitedMessage()
 	{
-		fireEvent(Participant::sendGameExitedMessage);
+		fireEvent(this::sendGameExitedMessage);
 	}
 	
-	private void sendGameExitedMessage(Player player)
+	private void sendGameExitedMessage(Participant participant)
 	{
-		player.sendGameExitedMessage();
+		participant.sendGameExitedMessage();
+		participant.reset();
 	}
 	
 	private void broadcastPlayersUpdatedMessage()
@@ -872,8 +871,14 @@ public class Game implements Target
 	
 	private void broadcastTooFewPlayersMessage()
 	{
-		players.forEach(Participant::sendTooFewPlayers);
-		spectators.forEach(Participant::sendTooFewPlayers);
+		players.forEach(this::sendTooFewPlayersMessage);
+		spectators.forEach(this::sendTooFewPlayersMessage);
+	}
+	
+	private void sendTooFewPlayersMessage(Participant participant)
+	{
+		participant.sendTooFewPlayers();
+		participant.reset();
 	}
 	
 	private void sendSpectatingStartMessage(Spectator spectator)

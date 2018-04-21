@@ -8,7 +8,7 @@ public interface UserAdapter
 	
 	void sendUsersListMessage(Stream<User> users);
 	
-	void sendServerStatusMessage(boolean gameAvailable);
+	void sendServerStatusMessage(boolean gameAvailable, int minUsers);
 	
 	void sendMessage(User sender, String message, boolean newMessage);
 }

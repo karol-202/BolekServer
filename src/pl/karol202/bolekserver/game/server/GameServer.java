@@ -116,11 +116,12 @@ public class GameServer implements Target, GameListener
 		Server.LOGGER.info("Game started on server " + serverCode);
 	}
 	
-	void spectate(User user)
+	boolean spectate(User user)
 	{
-		if(!users.contains(user) || game == null) return;
+		if(user == null || game == null) return false;
 		Spectator spectator = new Spectator(user, user.getAdapter());
 		game.addActionAndReturnImmediately(new GameActionSpectate(spectator));
+		return true;
 	}
 	
 	void sendMessage(User sender, String message)
@@ -180,7 +181,7 @@ public class GameServer implements Target, GameListener
 	
 	private void sendServerStatus(User user)
 	{
-		user.sendServerStatus(game == null);
+		user.sendServerStatus(game == null, MIN_USERS);
 	}
 	
 	private void broadcastMessage(User sender, String message)

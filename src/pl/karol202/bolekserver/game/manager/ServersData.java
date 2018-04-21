@@ -5,7 +5,7 @@ public class ServersData
 	private int servers;
 	private int activeServers;
 	
-	public ServersData(int servers, int activeServers)
+	ServersData(int servers, int activeServers)
 	{
 		this.servers = servers;
 		this.activeServers = activeServers;

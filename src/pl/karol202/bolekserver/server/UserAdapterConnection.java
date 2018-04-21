@@ -38,7 +38,7 @@ public class UserAdapterConnection implements UserAdapter
 	}
 	
 	@Override
-	public void sendServerStatusMessage(boolean gameAvailable)
+	public void sendServerStatusMessage(boolean gameAvailable, int minUsers)
 	{
 		connection.sendPacket(new OutputPacketServerStatus(gameAvailable));
 	}

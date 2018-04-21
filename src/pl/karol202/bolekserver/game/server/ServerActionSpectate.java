@@ -1,6 +1,6 @@
 package pl.karol202.bolekserver.game.server;
 
-public class ServerActionSpectate implements ServerAction<Void>
+public class ServerActionSpectate implements ServerAction<Boolean>
 {
 	private User user;
 	
@@ -10,9 +10,8 @@ public class ServerActionSpectate implements ServerAction<Void>
 	}
 	
 	@Override
-	public Void execute(GameServer target)
+	public Boolean execute(GameServer target)
 	{
-		target.spectate(user);
-		return null;
+		return target.spectate(user);
 	}
 }
