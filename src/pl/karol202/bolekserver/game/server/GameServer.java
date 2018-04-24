@@ -1,6 +1,5 @@
 package pl.karol202.bolekserver.game.server;
 
-import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
@@ -19,13 +18,18 @@ public class GameServer implements Target, GameListener
 	}
 	
 	private static final int MAX_USERNAME_LENGTH = 20;
-	private static final int MIN_USERS = ServerProperties.DEBUG ? 2 : 5;
+	private static final int MIN_USERS_NON_DEBUG = 5;
+	private static final int MIN_USERS_DEBUG = 2;
 	private static final int MAX_USERS = 10;
+	
+	private static final String SECRET_IMAGES = "IMAGES";
+	private static final String SECRET_DEBUG = "DEBUG";
 	
 	private Looper looper;
 	private String name;
 	private int serverCode;
 	private boolean secretImages;
+	private boolean debug;
 	
 	private List<User> users;
 	private Game game;
@@ -33,11 +37,13 @@ public class GameServer implements Target, GameListener
 	
 	private ServerListener serverListener;
 	
-	public GameServer(Looper looper, String name, int serverCode)
+	public GameServer(Looper looper, String name, int serverCode, boolean debug)
 	{
 		this.looper = looper;
 		this.name = name;
 		this.serverCode = serverCode;
+		this.debug = debug;
+		
 		this.users = new ArrayList<>();
 		this.messages = new ArrayList<>();
 	}
@@ -100,7 +106,7 @@ public class GameServer implements Target, GameListener
 
 	private void checkForReadiness()
 	{
-		if(users.size() < MIN_USERS) return;
+		if(users.size() < getMinUsers()) return;
 		for(User user : users) if(!user.isReady()) return;
 		startGame();
 	}
@@ -133,7 +139,8 @@ public class GameServer implements Target, GameListener
 	
 	void setSecretOption(String secretOption, int secretValue)
 	{
-		if(secretOption.equals("IMAGES")) secretImages = secretValue == 1;
+		if(secretOption.equals(SECRET_IMAGES)) secretImages = secretValue == 1;
+		else if(secretOption.equals(SECRET_DEBUG)) debug = secretValue == 1;
 	}
 	
 	@Override
@@ -153,6 +160,11 @@ public class GameServer implements Target, GameListener
 		sendServerStatus(player.getUser());
 	}
 	
+	
+	private int getMinUsers()
+	{
+		return debug ? MIN_USERS_DEBUG : MIN_USERS_NON_DEBUG;
+	}
 	
 	private boolean isUsernameUsed(String username)
 	{
@@ -181,7 +193,7 @@ public class GameServer implements Target, GameListener
 	
 	private void sendServerStatus(User user)
 	{
-		user.sendServerStatus(game == null, MIN_USERS);
+		user.sendServerStatus(game == null, getMinUsers());
 	}
 	
 	private void broadcastMessage(User sender, String message)
