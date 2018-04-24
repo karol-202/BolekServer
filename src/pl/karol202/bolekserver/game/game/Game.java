@@ -226,6 +226,7 @@ public class Game implements Target
 	private void primeMinisterNotChosen()
 	{
 		incrementPollIndex();
+		president = null; //Ciche usunięcie prezydenta, aby nie został on zablokowany przy następnym wyborze premiera
 		callNextTurn();
 	}
 	
@@ -384,6 +385,7 @@ public class Game implements Target
 	{
 		if(canPresidentCheckPlayer()) letPresidentCheckPlayer();
 		else if(canPresidentCheckPlayerOrActs()) letPresidentCheckPlayerOrActs();
+		else if(canPresidentCheckActs()) checkActsByPresident();
 		else if(canPresidentChoosePresident()) letPresidentChooseNewPresident();
 		else if(canPresidentLustratePlayer()) letPresidentLustratePlayer();
 		else callNextTurn();
@@ -435,7 +437,7 @@ public class Game implements Target
 		broadcastPresidentCheckedActsMessage();
 		callNextTurn();
 	}
-	
+
 	private void letPresidentChooseNewPresident()
 	{
 		choosingPresident = true;
@@ -606,6 +608,11 @@ public class Game implements Target
 	private boolean canPresidentCheckPlayerOrActs()
 	{
 		return passedAntilustrationActs == 2 && (initialPlayers.size() > 6 || ServerProperties.DEBUG);
+	}
+
+	private boolean canPresidentCheckActs()
+	{
+		return passedAntilustrationActs == 2 && (initialPlayers.size() <= 6 || !ServerProperties.DEBUG);
 	}
 	
 	private boolean canPresidentChoosePresident()
