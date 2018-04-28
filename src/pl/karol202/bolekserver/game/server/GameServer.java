@@ -115,7 +115,7 @@ public class GameServer implements Target, GameListener
 	{
 		users.forEach(u -> u.setReady(false));
 		List<Player> players = users.stream().map(u -> new Player(u, u.getAdapter())).collect(Collectors.toList());
-		game = new Game(looper, players, secretImages);
+		game = new Game(looper, players, secretImages, debug);
 		game.setGameListener(this);
 		game.addActionAndReturnImmediately(new GameActionStartGame());
 		
@@ -141,6 +141,7 @@ public class GameServer implements Target, GameListener
 	{
 		if(secretOption.equals(SECRET_IMAGES)) secretImages = secretValue == 1;
 		else if(secretOption.equals(SECRET_DEBUG)) debug = secretValue == 1;
+		broadcastServerStatus();
 	}
 	
 	@Override

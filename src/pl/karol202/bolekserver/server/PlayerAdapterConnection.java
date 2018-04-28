@@ -34,6 +34,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	{
 		connection.setGame(null);
 		connection.setPlayer(null);
+		connection.setSpectator(null);
 	}
 	
 	@Override

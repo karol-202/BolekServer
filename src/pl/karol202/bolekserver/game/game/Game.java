@@ -1,6 +1,5 @@
 package pl.karol202.bolekserver.game.game;
 
-import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.server.Utils;
@@ -27,6 +26,7 @@ public class Game implements Target
 	private List<Player> initialPlayers;
 	private List<Spectator> spectators;
 	private boolean secretImages;
+	private boolean debug;
 	private boolean gameEnd;
 	private boolean nextTurn;
 	
@@ -35,6 +35,7 @@ public class Game implements Target
 	private boolean extraordinaryPresident;
 	private boolean doNotChangePresident;
 	private Player nextPresident;
+	private boolean presidentNotChosen;
 	
 	//Failed voting
 	private int pollIndex;
@@ -63,7 +64,7 @@ public class Game implements Target
 	
 	private GameListener gameListener;
 	
-	public Game(Looper looper, List<Player> players, boolean secretImages)
+	public Game(Looper looper, List<Player> players, boolean secretImages, boolean debug)
 	{
 		this.looper = looper;
 		this.events = new ArrayList<>();
@@ -72,6 +73,7 @@ public class Game implements Target
 		this.initialPlayers = new ArrayList<>(players);
 		this.spectators = new ArrayList<>();
 		this.secretImages = secretImages;
+		this.debug = debug;
 		this.incomingActs = new Stack<>();
 	}
 	
@@ -136,7 +138,9 @@ public class Game implements Target
 	
 	private void assignPresidentPosition(Player president)
 	{
-		previousPresident = this.president;
+		if(!presidentNotChosen) previousPresident = this.president;
+		presidentNotChosen = false;
+		
 		this.president = president;
 		broadcastPresidentAssignment();
 	}
@@ -226,7 +230,7 @@ public class Game implements Target
 	private void primeMinisterNotChosen()
 	{
 		incrementPollIndex();
-		president = null; //Ciche usunięcie prezydenta, aby nie został on zablokowany przy następnym wyborze premiera
+		presidentNotChosen = true;
 		callNextTurn();
 	}
 	
@@ -507,6 +511,7 @@ public class Game implements Target
 		else if(lustratingByPresident) sendLustrationRequestToPresident(true);
 		
 		broadcastPlayersUpdatedMessage();
+		sendCollaboratorsRevealmentMessagesToCollaborators();
 		
 		if(player == president) resetTurn();
 		if(votingOnPrimeMinister)
@@ -570,6 +575,7 @@ public class Game implements Target
 		
 		sendSpectatingStartMessage(spectator);
 		broadcastPlayersUpdatedMessage();
+		sendCollaboratorsRevealmentMessagesToCollaborators();
 		for(Consumer<Participant> event : events) event.accept(spectator);
 	}
 	
@@ -577,6 +583,7 @@ public class Game implements Target
 	{
 		if(!spectators.contains(spectator)) return;
 		spectators.remove(spectator);
+		spectator.reset();
 	}
 	
 	
@@ -602,17 +609,17 @@ public class Game implements Target
 	
 	private boolean canPresidentCheckPlayer()
 	{
-		return passedAntilustrationActs == 1 && (initialPlayers.size() > 8 || ServerProperties.DEBUG);
+		return passedAntilustrationActs == 1 && (initialPlayers.size() > 8 || debug);
 	}
 	
 	private boolean canPresidentCheckPlayerOrActs()
 	{
-		return passedAntilustrationActs == 2 && (initialPlayers.size() > 6 || ServerProperties.DEBUG);
+		return passedAntilustrationActs == 2 && (initialPlayers.size() > 6 || debug);
 	}
 
 	private boolean canPresidentCheckActs()
 	{
-		return passedAntilustrationActs == 2 && (initialPlayers.size() <= 6 || !ServerProperties.DEBUG);
+		return passedAntilustrationActs == 2 && (initialPlayers.size() <= 6 && !debug);
 	}
 	
 	private boolean canPresidentChoosePresident()
@@ -665,7 +672,7 @@ public class Game implements Target
 	
 	private void sendCollaboratorsRevealmentMessagesToCollaborators()
 	{
-		Predicate<Player> filter = players.size() > 6 ? Player::isCollaborator :
+		Predicate<Player> filter = initialPlayers.size() > 6 ? Player::isCollaborator :
 														p -> p.isCollaborator() || p.isBolek();
 		sendCollaboratorsRevealmentMessagesTo(filter);
 	}

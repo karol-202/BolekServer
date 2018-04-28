@@ -41,7 +41,7 @@ public class GameServersManager implements Target
 			error.setError(ServerCreationError.TOO_MANY_SERVERS);
 			return null;
 		}
-		GameServer server = new GameServer(looper, name, getUniqueServerCode());
+		GameServer server = new GameServer(looper, name, getUniqueServerCode(), ServerProperties.DEBUG);
 		server.setServerListener(() -> removeEmptyServer(server));
 		servers.add(server);
 		
