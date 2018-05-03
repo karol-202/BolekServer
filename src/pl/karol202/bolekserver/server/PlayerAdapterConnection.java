@@ -1,18 +1,41 @@
 package pl.karol202.bolekserver.server;
 
+import pl.karol202.bolekserver.CompatibilityException;
 import pl.karol202.bolekserver.game.game.*;
+import pl.karol202.bolekserver.game.server.UserAdapter;
 import pl.karol202.bolekserver.server.outputpacket.*;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 public class PlayerAdapterConnection implements PlayerAdapter
 {
 	Connection connection;
 	
-	public PlayerAdapterConnection(Connection connection)
+	PlayerAdapterConnection(Connection connection)
 	{
 		this.connection = connection;
+	}
+	
+	public static PlayerAdapterConnection createPlayerAdapterConnection(UserAdapter userAdapter)
+	{
+		if(!(userAdapter instanceof UserAdapterConnection)) return null;
+		UserAdapterConnection userAdapterConnection = (UserAdapterConnection) userAdapter;
+		Connection connection = userAdapterConnection.getConnection();
+		int api = userAdapterConnection.getAPIVersion();
+		switch(api)
+		{
+		case 1:
+		case 2: return new PlayerAdapterConnection(connection);
+		case 3: return new PlayerAdapterConnectionAPI3(connection);
+		case 4: return new PlayerAdapterConnectionAPI4(connection);
+		case 5: return new PlayerAdapterConnectionAPI5(connection);
+		}
+		return null;
+	}
+	
+	public int getAPIVersion()
+	{
+		return 1;
 	}
 	
 	@Override
@@ -53,7 +76,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendCollaboratorsRevealmentMessage(List<Player> ministers, List<Player> collaborators, Player bolek)
+	public void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek)
 	{
 		OutputPacketCollaboratorsRevealment packet = new OutputPacketCollaboratorsRevealment(bolek.getName());
 		collaborators.forEach(p -> packet.addCollaborator(p.getName()));
@@ -97,7 +120,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendVotingResultMessage(List<Player> upvoters, int totalVotes, boolean passed)
+	public void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed)
 	{
 		OutputPacketVotingResult packet = new OutputPacketVotingResult(totalVotes, passed);
 		upvoters.forEach(p -> packet.addUpvoter(p.getName()));
@@ -165,7 +188,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendVetoRequest()
+	public void sendVetoRequestMessage()
 	{
 		OutputPacketVetoRequest packet = new OutputPacketVetoRequest();
 		connection.sendPacket(packet);
@@ -186,11 +209,17 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendWinMessage(boolean ministers, WinCause cause, Role role)
+	public void sendWinMessage(boolean ministers, WinCause cause)
 	{
-		if((ministers && role == Role.MINISTER) || (!ministers && role != Role.MINISTER))
-			connection.sendPacket(new OutputPacketWin(cause));
-		else connection.sendPacket(new OutputPacketLoss(cause));
+		OutputPacketWin packet = new OutputPacketWin(cause);
+		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendLossMessage(WinCause cause)
+	{
+		OutputPacketLoss packet = new OutputPacketLoss(cause);
+		connection.sendPacket(packet);
 	}
 	
 	@Override
@@ -234,6 +263,18 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	{
 		OutputPacketChoosePlayerOrActsCheckingPresident packet = new OutputPacketChoosePlayerOrActsCheckingPresident();
 		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendPresidentCheckingActsMessage()
+	{
+		throw new CompatibilityException("PresidentCheckingActs packet is not supported before API5");
+	}
+	
+	@Override
+	public void sendActsCheckingRequestToPresident()
+	{
+		throw new CompatibilityException("CheckActsPresident packet is not supported before API5");
 	}
 	
 	@Override
@@ -318,5 +359,8 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	}
 	
 	@Override
-	public void sendSpectatingStartMessage(boolean secretImages) { }
+	public void sendSpectatingStartMessage(boolean secretImages)
+	{
+		throw new CompatibilityException("SpectatingStart packet is not supported before API4");
+	}
 }

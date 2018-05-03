@@ -1,7 +1,7 @@
 package pl.karol202.bolekserver.server;
 
+import pl.karol202.bolekserver.CompatibilityException;
 import pl.karol202.bolekserver.game.game.Player;
-import pl.karol202.bolekserver.game.game.Role;
 import pl.karol202.bolekserver.game.game.WinCause;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacketGameStartAPI4;
 import pl.karol202.bolekserver.server.outputpacket.OutputPacketSpectatingStart;
@@ -13,9 +13,15 @@ public class PlayerAdapterConnectionAPI4 extends PlayerAdapterConnectionAPI3
 {
 	public static final byte[] SECRET_IMAGES_CODE = { 48, -120, 18, 9, -58, 111, -107, 100, 17, -123, 81, -65, 86, 102, 31, -117 };
 	
-	public PlayerAdapterConnectionAPI4(Connection connection)
+	PlayerAdapterConnectionAPI4(Connection connection)
 	{
 		super(connection);
+	}
+	
+	@Override
+	public int getAPIVersion()
+	{
+		return 4;
 	}
 	
 	@Override
@@ -27,10 +33,16 @@ public class PlayerAdapterConnectionAPI4 extends PlayerAdapterConnectionAPI3
 	}
 	
 	@Override
-	public void sendWinMessage(boolean ministers, WinCause cause, Role role)
+	public void sendWinMessage(boolean ministers, WinCause cause)
 	{
 		OutputPacketWinAPI4 packet = new OutputPacketWinAPI4(ministers, cause);
 		connection.sendPacket(packet);
+	}
+	
+	@Override
+	public void sendLossMessage(WinCause cause)
+	{
+		throw new CompatibilityException("Loss packet is not supported in API4");
 	}
 	
 	@Override

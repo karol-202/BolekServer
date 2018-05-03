@@ -1,6 +1,5 @@
 package pl.karol202.bolekserver.game.game;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 public interface PlayerAdapter
@@ -15,7 +14,7 @@ public interface PlayerAdapter
 	
 	void sendRoleAssignmentMessage(Role role);
 	
-	void sendCollaboratorsRevealmentMessage(List<Player> ministers, List<Player> collaborators, Player bolek);
+	void sendCollaboratorsRevealmentMessage(Stream<Player> ministers, Stream<Player> collaborators, Player bolek);
 	
 	void sendStackRefillMessage(int totalActs);
 	
@@ -27,7 +26,7 @@ public interface PlayerAdapter
 	
 	void sendPrimeMinisterVotingRequest();
 	
-	void sendVotingResultMessage(List<Player> upvoters, int totalVotes, boolean passed);
+	void sendVotingResultMessage(Stream<Player> upvoters, int totalVotes, boolean passed);
 	
 	void sendPrimeMinisterAssignmentMessage(Player primeMinister);
 	
@@ -45,13 +44,15 @@ public interface PlayerAdapter
 	
 	void sendPrimeMinisterChoosingActsMessage();
 	
-	void sendVetoRequest();
+	void sendVetoRequestMessage();
 	
 	void sendVetoResponseMessage(boolean response);
 	
 	void sendActPassedMessage(int lustrationPassed, int antilustrationPassed);
 	
-	void sendWinMessage(boolean ministers, WinCause cause, Role role);
+	void sendWinMessage(boolean ministers, WinCause cause);
+	
+	void sendLossMessage(WinCause cause);
 	
 	void sendPresidentCheckingPlayerMessage();
 	
@@ -64,6 +65,10 @@ public interface PlayerAdapter
 	void sendPresidentCheckingPlayerOrActsMessage();
 	
 	void sendPlayerOrActsCheckingChooseRequestToPresident();
+	
+	void sendPresidentCheckingActsMessage();
+	
+	void sendActsCheckingRequestToPresident();
 	
 	void sendActsCheckingResultMessageToPresident(Act[] acts);
 	

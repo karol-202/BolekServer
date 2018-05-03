@@ -18,6 +18,7 @@ enum InputPacketType
 	VETORESPONSE(InputPacketVetoResponse::new),
 	CHECKPLAYERPRESIDENT(InputPacketCheckPlayerPresident::new),
 	CHOOSEPLAYERORACTSCHECKINGPRESIDENT(InputPacketChoosePlayerOrActsCheckingPresident::new),
+	CHECKACTSPRESIDENT(InputPacketCheckActsPresident::new),
 	CHOOSEPRESIDENT(InputPacketChoosePresident::new),
 	LUSTRATEPRESIDENT(InputPacketLustratePresident::new),
 	EXITGAME(InputPacketExitGame::new),

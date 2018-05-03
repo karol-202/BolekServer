@@ -7,16 +7,17 @@ public class Spectator extends Participant
 {
 	public Spectator(User user, UserAdapter adapter)
 	{
-		super(user, Player.createPlayerAdapterConnection(adapter));
+		super(user, adapter);
+	}
+	
+	@Override
+	EventListener getEventListener()
+	{
+		return SpectatorEventListener.createSpectatorEventListener(this, getAdapter());
 	}
 	
 	void init(Game game)
 	{
 		getAdapter().setGameAndSpectator(game, this);
-	}
-	
-	void sendSpectatingStartMessage(boolean secretImages)
-	{
-		getAdapter().sendSpectatingStartMessage(secretImages);
 	}
 }

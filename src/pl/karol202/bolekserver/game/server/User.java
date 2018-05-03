@@ -27,6 +27,7 @@ public class User
 		case 2: return new UserAdapterConnectionAPI2(connection);
 		case 3: return new UserAdapterConnectionAPI3(connection);
 		case 4: return new UserAdapterConnectionAPI4(connection);
+		case 5: return new UserAdapterConnectionAPI5(connection);
 		}
 		return null;
 	}
