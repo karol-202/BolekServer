@@ -108,7 +108,7 @@ class SpectatorEventListenerAPI4 extends SpectatorEventListener
 	@Override
 	public void onPresidentCheckingPlayer(Player president, boolean update, List<Player> checkablePlayers)
 	{
-		getAdapter().sendPresidentCheckingPlayerMessage();
+		if(!update) getAdapter().sendPresidentCheckingPlayerMessage();
 	}
 	
 	@Override
@@ -138,13 +138,13 @@ class SpectatorEventListenerAPI4 extends SpectatorEventListener
 	@Override
 	public void onPresidentChoosingPresident(Player president, boolean update, List<Player> availablePlayers)
 	{
-		getAdapter().sendPresidentChoosingPresidentMessage();
+		if(!update) getAdapter().sendPresidentChoosingPresidentMessage();
 	}
 	
 	@Override
 	public void onPresidentLustratingPlayer(Player president, boolean update, List<Player> availablePlayers)
 	{
-		getAdapter().sendPresidentLustratingMessage();
+		if(!update) getAdapter().sendPresidentLustratingMessage();
 	}
 	
 	@Override
@@ -174,4 +174,7 @@ class SpectatorEventListenerAPI4 extends SpectatorEventListener
 		getAdapter().sendPlayersUpdatedMessage(allPlayers.stream());
 		getAdapter().sendCollaboratorsRevealmentMessage(ministers.stream(), collaborators.stream(), bolek);
 	}
+	
+	@Override
+	public void onSpectatingSynchronized(Spectator spectator) { }
 }

@@ -1,22 +1,27 @@
 package pl.karol202.bolekserver.server;
 
+import pl.karol202.bolekserver.Main;
 import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server
 {
-	public static final Logger LOGGER = Logger.getLogger("bolek");
+	private static Server instance;
+	
+	public static void startServer(GameServersManager gameServersManager)
+	{
+		if(Server.instance != null) throw new IllegalStateException("Server is already started.");
+		instance = new Server(gameServersManager);
+	}
 	
 	private GameServersManager gameServersManager;
 	private ServerSocket serverSocket;
 	
-	public Server(GameServersManager gameServersManager)
+	private Server(GameServersManager gameServersManager)
 	{
 		this.gameServersManager = gameServersManager;
 		
@@ -24,20 +29,9 @@ public class Server
 		tryToWaitForClients();
 	}
 	
-	public static void configureLogger()
-	{
-		LOGGER.setUseParentHandlers(false);
-		LOGGER.addHandler(new LoggerHandler());
-	}
-	
-	public static void setLoggerLevel(Level level)
-	{
-		LOGGER.setLevel(level);
-	}
-	
 	private void startServerSocket()
 	{
-		LOGGER.info("Starting server");
+		Main.LOGGER.info("Starting server");
 		try
 		{
 			serverSocket = new ServerSocket(ServerProperties.SERVER_PORT);
@@ -62,11 +56,11 @@ public class Server
 	
 	private void waitForClients() throws IOException
 	{
-		LOGGER.fine("Waiting for clients...");
+		Main.LOGGER.fine("Waiting for clients...");
 		while(!serverSocket.isClosed())
 		{
 			Socket socket = serverSocket.accept();
-			LOGGER.info("Connected to client");
+			Main.LOGGER.info("Connected to client");
 			Connection connection = new Connection(gameServersManager);
 			if(!connection.connect(socket)) continue;
 			connection.run();

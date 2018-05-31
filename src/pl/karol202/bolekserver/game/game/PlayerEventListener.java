@@ -144,7 +144,7 @@ class PlayerEventListener implements EventListener
 	public void onPresidentCheckingPlayer(Player president, boolean update, List<Player> checkablePlayers)
 	{
 		if(player == president) adapter.sendPlayerCheckRequestToPresident(update, checkablePlayers.stream());
-		else adapter.sendPresidentCheckingPlayerMessage();
+		else if(!update) adapter.sendPresidentCheckingPlayerMessage();
 	}
 	
 	@Override
@@ -178,14 +178,14 @@ class PlayerEventListener implements EventListener
 	public void onPresidentChoosingPresident(Player president, boolean update, List<Player> availablePlayers)
 	{
 		if(player == president) adapter.sendChoosePresidentRequestToPresident(update, availablePlayers.stream());
-		else adapter.sendPresidentChoosingPresidentMessage();
+		else if(!update) adapter.sendPresidentChoosingPresidentMessage();
 	}
 	
 	@Override
 	public void onPresidentLustratingPlayer(Player president, boolean update, List<Player> availablePlayers)
 	{
 		if(player == president) adapter.sendLustrationRequestToPresident(update, availablePlayers.stream());
-		else adapter.sendPresidentLustratingMessage();
+		else if(!update) adapter.sendPresidentLustratingMessage();
 	}
 	
 	@Override
@@ -216,6 +216,9 @@ class PlayerEventListener implements EventListener
 	@Override
 	public void onSpectatingStart(Spectator spectator, List<Player> allPlayers, boolean secretImages, List<Player> ministers,
 	                              List<Player> collaborators, Player bolek, boolean bolekKnows) { }
+	
+	@Override
+	public void onSpectatingSynchronized(Spectator spectator) { }
 	
 	Player getPlayer()
 	{

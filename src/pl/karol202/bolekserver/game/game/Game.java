@@ -178,7 +178,7 @@ public class Game implements Target
 	
 	boolean voteOnPrimeMinister(Player sender, boolean vote)
 	{
-		if(!votingOnPrimeMinister || sender == null || votes.containsKey(sender)) return false;
+		if(!votingOnPrimeMinister || sender == null) return false;
 		votes.put(sender, vote);
 		checkIfVotingIsEnded();
 		return true;
@@ -573,6 +573,7 @@ public class Game implements Target
 		
 		onSpectatingStart(spectator);
 		for(Consumer<EventListener> event : events) event.accept(spectator);
+		onSpectatingSynchronized(spectator);
 	}
 	
 	void stopSpectating(Spectator spectator)
@@ -832,7 +833,7 @@ public class Game implements Target
 		Player bolek = initialPlayers.stream().filter(Player::isBolek).findAny().orElse(null);
 		if(bolek == null) return;
 		
-		fireEvent(el -> el.onGameExited(player, allPlayers, ministers, collaborators, bolek, doesBolekKnowCollaborators()), false);
+		fireEvent(el -> el.onGameExited(player, allPlayers, ministers, collaborators, bolek, doesBolekKnowCollaborators()));
 	}
 	
 	private void onTooFewPlayers()
@@ -851,14 +852,14 @@ public class Game implements Target
 		fireEvent(el -> el.onSpectatingStart(spectator, allPlayers, secretImages, ministers, collaborators, bolek, doesBolekKnowCollaborators()));
 	}
 	
-	private void fireEvent(Consumer<EventListener> event)
+	private void onSpectatingSynchronized(Spectator spectator)
 	{
-		fireEvent(event, true);
+		fireEvent(el -> el.onSpectatingSynchronized(spectator));
 	}
 	
-	private void fireEvent(Consumer<EventListener> event, boolean log)
+	private void fireEvent(Consumer<EventListener> event)
 	{
-		if(log) events.add(event);
+		events.add(event);
 		players.forEach(event);
 		spectators.forEach(event);
 	}

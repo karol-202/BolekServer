@@ -4,33 +4,67 @@ import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.manager.GameServersManager;
 import pl.karol202.bolekserver.server.Server;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Main
 {
-	private Looper looper;
-	private GameServersManager gameServersManager;
+	static final String FILE_PROPERTIES = "bolek.conf";
+	static final String FILE_LOG = "bolek.log";
+	
+	public static final Logger LOGGER = Logger.getLogger("bolek");
 	
 	private Main()
 	{
-		Server.configureLogger();
-		if(!ServerProperties.tryToLoadProperties()) return;
-		Server.setLoggerLevel(ServerProperties.LOGGING_LEVEL);
+		Looper looper = new Looper();
+		runLooper(looper);
 		
-		looper = new Looper();
-		runLooper();
-		
-		gameServersManager = new GameServersManager(looper);
-		new Server(gameServersManager);
+		Server.startServer(new GameServersManager(looper));
 	}
 	
-	private void runLooper()
+	private void runLooper(Looper looper)
 	{
-		Thread thread = new Thread(() -> looper.run());
-		thread.setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+		Thread thread = new Thread(looper::run);
+		thread.setUncaughtExceptionHandler((t, e) -> uncaughtException(e));
 		thread.start();
 	}
 	
 	public static void main(String[] args)
 	{
-		new Main();
+		try
+		{
+			setup();
+			new Main();
+		}
+		catch(Exception exception)
+		{
+			uncaughtException(exception);
+		}
+	}
+	
+	private static void setup() throws IOException
+	{
+		configureLogger();
+		ServerProperties.tryToLoadProperties();
+		setLoggerLevel();
+	}
+	
+	private static void configureLogger() throws FileNotFoundException
+	{
+		LOGGER.setUseParentHandlers(false);
+		LOGGER.addHandler(new LoggerConsoleHandler());
+		LOGGER.addHandler(new LoggerFileHandler());
+	}
+	
+	private static void setLoggerLevel()
+	{
+		LOGGER.setLevel(ServerProperties.LOGGING_LEVEL);
+	}
+	
+	private static void uncaughtException(Throwable throwable)
+	{
+		LOGGER.log(Level.SEVERE, "Uncaught exception", throwable);
 	}
 }

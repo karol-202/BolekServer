@@ -1,11 +1,11 @@
 package pl.karol202.bolekserver.game.manager;
 
+import pl.karol202.bolekserver.Main;
 import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.game.server.GameServer;
-import pl.karol202.bolekserver.server.Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +18,6 @@ public class GameServersManager implements Target
 		INVALID_NAME, TOO_MANY_SERVERS
 	}
 	
-	private static final int MAX_SERVER_NAME_LENGTH = 20;
-	
 	private Looper looper;
 	private List<GameServer> servers;
 	
@@ -31,7 +29,7 @@ public class GameServersManager implements Target
 	
 	GameServer createNewGameServer(String name, ErrorReference<ServerCreationError> error)
 	{
-		if(name == null || name.isEmpty() || name.length() > MAX_SERVER_NAME_LENGTH)
+		if(name == null || name.isEmpty() || name.length() > ServerProperties.MAX_SERVER_NAME_LENGTH)
 		{
 			error.setError(ServerCreationError.INVALID_NAME);
 			return null;
@@ -45,7 +43,7 @@ public class GameServersManager implements Target
 		server.setServerListener(() -> removeEmptyServer(server));
 		servers.add(server);
 		
-		Server.LOGGER.info("Created new server: " + name + ", " + server.getServerCode());
+		Main.LOGGER.info("Created new server: " + name + ", " + server.getServerCode());
 		return server;
 	}
 	
@@ -81,7 +79,7 @@ public class GameServersManager implements Target
 	private void removeEmptyServer(GameServer server)
 	{
 		servers.remove(server);
-		Server.LOGGER.info("Removed server: " + server.getName() + ", " + server.getServerCode());
+		Main.LOGGER.info("Removed server: " + server.getName() + ", " + server.getServerCode());
 	}
 	
 	public <R> R addActionAndWaitForResult(ConnectionAction<R> action)

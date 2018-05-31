@@ -11,6 +11,6 @@ class SpectatorEventListenerAPI5 extends SpectatorEventListenerAPI4
 	public boolean onPresidentCheckingActs(Player president)
 	{
 		getAdapter().sendPresidentCheckingActsMessage();
-		return true;//Doesn't concern spectators
+		return false;//Doesn't concern spectators
 	}
 }

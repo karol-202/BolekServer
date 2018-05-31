@@ -1,10 +1,11 @@
 package pl.karol202.bolekserver.game.server;
 
+import pl.karol202.bolekserver.Main;
+import pl.karol202.bolekserver.ServerProperties;
 import pl.karol202.bolekserver.game.ErrorReference;
 import pl.karol202.bolekserver.game.Looper;
 import pl.karol202.bolekserver.game.Target;
 import pl.karol202.bolekserver.game.game.*;
-import pl.karol202.bolekserver.server.Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,6 @@ public class GameServer implements Target, GameListener
 		INVALID_USER, INVALID_NAME, TOO_MANY_USERS, USERNAME_BUSY
 	}
 	
-	private static final int MAX_USERNAME_LENGTH = 20;
 	private static final int MIN_USERS_NON_DEBUG = 5;
 	private static final int MIN_USERS_DEBUG = 2;
 	private static final int MAX_USERS = 10;
@@ -56,7 +56,7 @@ public class GameServer implements Target, GameListener
 			return false;
 		}
 		String username = user.getName();
-		if(username == null || username.isEmpty() || username.length() > MAX_USERNAME_LENGTH)
+		if(username == null || username.isEmpty() || username.length() > ServerProperties.MAX_USERNAME_LENGTH)
 		{
 			error.setError(UserAddingError.INVALID_NAME);
 			return false;
@@ -79,7 +79,7 @@ public class GameServer implements Target, GameListener
 		sendServerStatus(user);
 		sendAllMessages(user);
 		
-		Server.LOGGER.info("User " + username + " joined server " + serverCode);
+		Main.LOGGER.info("User " + username + " joined server " + serverCode);
 		return true;
 	}
 	
@@ -92,7 +92,7 @@ public class GameServer implements Target, GameListener
 		if(users.isEmpty()) serverListener.onServerEmpty();
 		checkForReadiness();
 		
-		Server.LOGGER.info("User " + user.getName() + " leaved server " + serverCode);
+		Main.LOGGER.info("User " + user.getName() + " leaved server " + serverCode);
 		return true;
 	}
 	
@@ -119,7 +119,7 @@ public class GameServer implements Target, GameListener
 		game.setGameListener(this);
 		game.addActionAndReturnImmediately(new GameActionStartGame());
 		
-		Server.LOGGER.info("Game started on server " + serverCode);
+		Main.LOGGER.info("Game started on server " + serverCode);
 	}
 	
 	boolean spectate(User user)
@@ -151,7 +151,7 @@ public class GameServer implements Target, GameListener
 		broadcastUsersUpdate();
 		broadcastServerStatus();
 		
-		Server.LOGGER.info("Game ended on server " + serverCode);
+		Main.LOGGER.info("Game ended on server " + serverCode);
 	}
 	
 	@Override

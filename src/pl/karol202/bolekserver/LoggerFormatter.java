@@ -1,4 +1,4 @@
-package pl.karol202.bolekserver.server;
+package pl.karol202.bolekserver;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

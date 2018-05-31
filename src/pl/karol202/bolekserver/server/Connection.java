@@ -1,5 +1,6 @@
 package pl.karol202.bolekserver.server;
 
+import pl.karol202.bolekserver.Main;
 import pl.karol202.bolekserver.game.game.Game;
 import pl.karol202.bolekserver.game.game.GameActionExitGame;
 import pl.karol202.bolekserver.game.game.Player;
@@ -90,7 +91,7 @@ public class Connection
 	
 	private void listen() throws IOException
 	{
-		Server.LOGGER.fine("Listening...");
+		Main.LOGGER.fine("Listening...");
 		while(isConnected())
 		{
 			InputPacket packet = receivePacket();
@@ -111,8 +112,8 @@ public class Connection
 			bytesRead += inputStream.read(bytes, bytesRead, length - bytesRead);
 		
 		InputPacket packet = InputPacketFactory.createPacket(bytes);
-		if(packet == null) Server.LOGGER.warning("Packet received: corrupted: \n"+ new String(bytes));
-		else if(!packet.isSilent()) Server.LOGGER.fine("Packet received: " + packet.toString());
+		if(packet == null) Main.LOGGER.warning("Packet received: corrupted: \n"+ new String(bytes));
+		else if(!packet.isSilent()) Main.LOGGER.fine("Packet received: " + packet.toString());
 		return packet;
 	}
 	
@@ -133,7 +134,7 @@ public class Connection
 		if(!isConnected()) return;
 		try
 		{
-			Server.LOGGER.fine("Sending packet: " + packet.toString());
+			Main.LOGGER.fine("Sending packet: " + packet.toString());
 			writePacket(packet);
 		}
 		catch(IOException e)
@@ -157,7 +158,7 @@ public class Connection
 		if(!isConnected()) return;
 		try
 		{
-			Server.LOGGER.info("Closing socket");
+			Main.LOGGER.info("Closing socket");
 			socket.close();
 		}
 		catch(IOException e)
@@ -199,7 +200,7 @@ public class Connection
 			unansweredPings++;
 			if(unansweredPings > MAX_UNANSWERED_PINGS)
 			{
-				Server.LOGGER.warning("Closing socket due to no ping response.");
+				Main.LOGGER.warning("Closing socket due to no ping response.");
 				closeSocket();
 			}
 		}

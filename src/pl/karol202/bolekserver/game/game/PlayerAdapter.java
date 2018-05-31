@@ -93,4 +93,6 @@ public interface PlayerAdapter
 	void sendTooFewPlayersMessage();
 	
 	void sendSpectatingStartMessage(boolean secretImages);
+	
+	void sendSpectatingSynchronizedMessage();
 }

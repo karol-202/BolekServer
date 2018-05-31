@@ -184,6 +184,12 @@ public abstract class Participant implements EventListener
 		eventListener.onSpectatingStart(spectator, allPlayers, secretImages, ministers, collaborators, bolek, bolekKnows);
 	}
 	
+	@Override
+	public void onSpectatingSynchronized(Spectator spectator)
+	{
+		eventListener.onSpectatingSynchronized(spectator);
+	}
+	
 	void reset()
 	{
 		adapter.resetAll();

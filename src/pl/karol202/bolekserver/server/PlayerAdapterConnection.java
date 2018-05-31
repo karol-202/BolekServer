@@ -29,6 +29,7 @@ public class PlayerAdapterConnection implements PlayerAdapter
 		case 3: return new PlayerAdapterConnectionAPI3(connection);
 		case 4: return new PlayerAdapterConnectionAPI4(connection);
 		case 5: return new PlayerAdapterConnectionAPI5(connection);
+		case 6: return new PlayerAdapterConnectionAPI6(connection);
 		}
 		return null;
 	}
@@ -362,5 +363,11 @@ public class PlayerAdapterConnection implements PlayerAdapter
 	public void sendSpectatingStartMessage(boolean secretImages)
 	{
 		throw new CompatibilityException("SpectatingStart packet is not supported before API4");
+	}
+	
+	@Override
+	public void sendSpectatingSynchronizedMessage()
+	{
+		throw new CompatibilityException("SpectatingStart packet is not supported before API6");
 	}
 }

@@ -58,4 +58,6 @@ public interface EventListener
 	void onTooFewPlayers();
 	
 	void onSpectatingStart(Spectator spectator, List<Player> allPlayers, boolean secretImages, List<Player> ministers, List<Player> collaborators, Player bolek, boolean bolekKnows);
+	
+	void onSpectatingSynchronized(Spectator spectator);
 }

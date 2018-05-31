@@ -1,12 +1,12 @@
-package pl.karol202.bolekserver.server;
+package pl.karol202.bolekserver;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
 
-class LoggerHandler extends StreamHandler
+class LoggerConsoleHandler extends StreamHandler
 {
-	LoggerHandler()
+	LoggerConsoleHandler()
 	{
 		super();
 		setOutputStream(System.out);
